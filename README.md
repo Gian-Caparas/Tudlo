@@ -3,9 +3,10 @@
 Tudlo is a web-based learning analytics system that helps teachers see **where** students struggle, not just how they scored overall. It combines LMS assessment results and submission records into one dashboard, analyzes performance by topic and learning outcome, tracks progress over time, and flags students who may need additional support.
 
 > **Course:** CSIT321 – Applications Development and Emerging Technology
-> **School:** Cebu Institute of Technology – University, College of Computer Studies, Department of Information Technology
+
+> **School:** Cebu Institute of Technology – University, College of Computer Studies
+
 > **Team:** Groufings
-> **Repository:** https://github.com/Gian-Caparas/Tudlo
 
 ---
 
