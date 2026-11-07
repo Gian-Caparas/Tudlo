@@ -5,6 +5,7 @@ Tudlo is a web-based learning analytics system that helps teachers see **where**
 > **Course:** CSIT321 – Applications Development and Emerging Technology
 > **School:** Cebu Institute of Technology – University, College of Computer Studies, Department of Information Technology
 > **Team:** Groufings
+> **Repository:** https://github.com/Gian-Caparas/Tudlo
 
 ---
 
@@ -65,7 +66,7 @@ LMS records mostly show overall grades and separate activity reports. A student 
 ## Project Structure
 
 ```text
-tudlo/
+Tudlo/
 ├─ README.md
 ├─ docker-compose.yml                (optional: local database)
 ├─ backend/                          Spring Boot API
@@ -117,8 +118,8 @@ The backend is organized by **feature package** (not by layer) so each team memb
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/<your-org>/tudlo.git
-cd tudlo
+git clone https://github.com/Gian-Caparas/Tudlo.git
+cd Tudlo
 ```
 
 ### 2. Set up the database
@@ -306,9 +307,9 @@ npm run test
 | Member | Role |
 |---|---|
 | Gian Joebert B. Caparas | Fullstack developer and team lead |
-| Laurence Andrey M. Baraga | Frontend developer |
-| Melody Ness B. Ecarma | Backend developer |
+| Melody Ness B. Ecarma | Frontend developer |
+| Laurence Andrey M. Baraga  | Backend developer |
 
 ---
 
-*Tudlo is a school project for CSIT321. Prototype: see the project's Figma file.*
+*Tudlo is a school project for CSIT321.*
