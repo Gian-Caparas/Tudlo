@@ -1,5 +1,5 @@
 package com.csit321G6.groufings.tudlo.admin;
 
-public interface AdminRepository {
+public interface AdminRepository extends JpaRepository<Admin, Long> {
 
 }
