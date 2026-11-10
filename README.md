@@ -59,7 +59,7 @@ LMS records mostly show overall grades and separate activity reports. A student 
 |---|---|
 | Frontend | React (Vite), React Router, Axios, TanStack Query, Recharts |
 | Backend | Spring Boot 3 (Java 21), Spring Web, Spring Data JPA, Spring Security (JWT), Bean Validation |
-| Database | PostgreSQL with Flyway migrations (H2 for tests) |
+| Database | MariaDB (XAMPP for local development) |
 | CSV | Apache Commons CSV |
 | API Docs | springdoc-openapi (Swagger UI) |
 | Tools | Git and GitHub, Postman, Figma |
@@ -114,7 +114,7 @@ The backend is organized by **feature package** (not by layer) so each team memb
 - Java 21 (or 17)
 - Maven 3.9+ (or use the included `mvnw`)
 - Node.js 20+ and npm
-- PostgreSQL 15+ (or Docker)
+- MariaDB 10.4+ (for example, the MariaDB server included with XAMPP)
 
 ### 1. Clone the repository
 
@@ -125,13 +125,8 @@ cd Tudlo
 
 ### 2. Set up the database
 
-Create a database named `tudlo`:
-
-```sql
-CREATE DATABASE tudlo;
-```
-
-Flyway creates the tables and seed data automatically on the first backend start.
+Start the MySQL module in XAMPP, then create a database named `tudlo` in phpMyAdmin.
+For local development, Hibernate creates or updates the tables when the backend starts.
 
 ### 3. Run the backend
 
@@ -153,42 +148,25 @@ npm run dev
 
 - App: http://localhost:5173
 
-### Demo account (from seed data)
-
-| Field | Value |
-|---|---|
-| Email | `teacher@tudlo.test` |
-| Password | `ChangeMe123!` |
-
-Change the seed credentials before deploying anywhere public.
+No demo users are seeded. Create a user through the API before testing dependent records.
 
 ## Configuration
 
-### Backend: `backend/src/main/resources/application.yml`
+### Backend: `backend/tudlo/src/main/resources/application.properties`
 
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/tudlo
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    open-in-view: false
-  flyway:
-    enabled: true
-  servlet:
-    multipart:
-      max-file-size: 5MB
-      max-request-size: 5MB
+```properties
+spring.datasource.url=jdbc:mariadb://localhost:3306/tudlo
+spring.datasource.username=${DB_USERNAME:root}
+spring.datasource.password=${DB_PASSWORD:}
+spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
+spring.jpa.hibernate.ddl-auto=update
+spring.flyway.enabled=false
 
-app:
-  jwt:
-    secret: ${JWT_SECRET:change-this-to-a-long-random-string}
-    expiration-ms: 86400000
-  cors:
-    allowed-origin: http://localhost:5173
+app.jwt.secret=${JWT_SECRET:change-this-to-a-long-random-string}
+app.jwt.expiration-ms=86400000
+app.cors.allowed-origin=http://localhost:5173
+spring.servlet.multipart.max-file-size=5MB
+spring.servlet.multipart.max-request-size=5MB
 ```
 
 ### Frontend: `frontend/.env`

@@ -1,6 +1,7 @@
 package com.csit321G6.groufings.tudlo.admin;
 
 import com.csit321G6.groufings.tudlo.common.*;
+import com.csit321G6.groufings.tudlo.common.exception.BadRequestException;
 import com.csit321G6.groufings.tudlo.user.UserRepository;
 import com.csit321G6.groufings.tudlo.user.UserType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -46,4 +47,3 @@ public class AdminService extends CrudService<Admin, AdminDto.Request, AdminDto.
                 entity.getUser().getId());
     }
 }
-

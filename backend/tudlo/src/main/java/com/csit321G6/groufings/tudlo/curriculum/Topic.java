@@ -1,5 +1,6 @@
 package com.csit321G6.groufings.tudlo.curriculum;
 
+import com.csit321G6.groufings.tudlo.classroom.ClassRoom;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
