@@ -58,7 +58,7 @@ LMS records mostly show overall grades and separate activity reports. A student 
 | Layer | Technology |
 |---|---|
 | Frontend | React (Vite), React Router, Axios, TanStack Query, Recharts |
-| Backend | Spring Boot 3 (Java 21), Spring Web, Spring Data JPA, Spring Security (JWT), Bean Validation |
+| Backend | Spring Boot 4 (Java 25), Spring Web, Spring Data JPA, Spring Security (JWT), Bean Validation |
 | Database | MariaDB (XAMPP for local development) |
 | CSV | Apache Commons CSV |
 | API Docs | springdoc-openapi (Swagger UI) |
@@ -111,7 +111,7 @@ The backend is organized by **feature package** (not by layer) so each team memb
 
 ### Prerequisites
 
-- Java 21 (or 17)
+- Java 25
 - Maven 3.9+ (or use the included `mvnw`)
 - Node.js 20+ and npm
 - MariaDB 10.4+ (for example, the MariaDB server included with XAMPP)
