@@ -1,7 +1,7 @@
 package com.csit321G6.groufings.tudlo.support;
 
 import com.csit321G6.groufings.tudlo.student.*;
-import com.csit321G6.groufings.tudlo.user.*;
+import com.csit321G6.groufings.tudlo.teacher.*;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import lombok.Getter;

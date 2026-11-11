@@ -1,6 +1,7 @@
-package com.csit321G6.groufings.tudlo.user;
+package com.csit321G6.groufings.tudlo.teacher;
 
 import com.csit321G6.groufings.tudlo.common.*;
+import com.csit321G6.groufings.tudlo.user.*;
 import com.csit321G6.groufings.tudlo.common.exception.BadRequestException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;

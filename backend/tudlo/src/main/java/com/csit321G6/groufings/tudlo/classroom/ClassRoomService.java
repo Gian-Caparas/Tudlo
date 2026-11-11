@@ -1,7 +1,7 @@
 package com.csit321G6.groufings.tudlo.classroom;
 
 import com.csit321G6.groufings.tudlo.common.CrudService;
-import com.csit321G6.groufings.tudlo.user.TeacherRepository;
+import com.csit321G6.groufings.tudlo.teacher.TeacherRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 

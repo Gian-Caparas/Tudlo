@@ -2,7 +2,7 @@ package com.csit321G6.groufings.tudlo.support;
 
 import com.csit321G6.groufings.tudlo.common.*;
 import com.csit321G6.groufings.tudlo.student.*;
-import com.csit321G6.groufings.tudlo.user.*;
+import com.csit321G6.groufings.tudlo.teacher.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 

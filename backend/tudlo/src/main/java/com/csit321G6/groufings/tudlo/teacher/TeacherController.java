@@ -1,4 +1,4 @@
-package com.csit321G6.groufings.tudlo.user;
+package com.csit321G6.groufings.tudlo.teacher;
 
 import com.csit321G6.groufings.tudlo.common.*;
 import org.springframework.web.bind.annotation.RequestMapping;
