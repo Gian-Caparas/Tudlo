@@ -69,43 +69,38 @@ LMS records mostly show overall grades and separate activity reports. A student 
 ```text
 Tudlo/
 ├─ README.md
-├─ docker-compose.yml                (optional: local database)
-├─ backend/                          Spring Boot API
-│  ├─ pom.xml
-│  └─ src/
-│     ├─ main/java/com/tudlo/
-│     │  ├─ config/        security, CORS, OpenAPI configuration
-│     │  ├─ security/      JWT service and authentication filter
-│     │  ├─ common/        exception handling, shared DTOs, utilities
-│     │  ├─ auth/          login endpoints
-│     │  ├─ user/          user entity and roles
-│     │  ├─ classroom/     classes
-│     │  ├─ student/       students and enrollments
-│     │  ├─ curriculum/    topics and learning outcomes
-│     │  ├─ assessment/    assessments, items, mapping
-│     │  ├─ submission/    submissions and item scores
-│     │  ├─ importer/      CSV template, validation, import
-│     │  ├─ analytics/     dashboard, heatmap, most-missed, student history
-│     │  ├─ support/       support activities, thresholds, flags
-│     │  └─ report/        CSV export
-│     ├─ main/resources/
-│     │  ├─ application.yml
-│     │  └─ db/migration/  V1__schema.sql, V2__seed.sql
-│     └─ test/
-└─ frontend/                         React app
-   ├─ package.json
-   ├─ vite.config.js
-   └─ src/
-      ├─ api/          Axios client and API modules
-      ├─ auth/         AuthContext, ProtectedRoute
-      ├─ components/   layout, ui, charts (heatmap, line, bar)
-      ├─ pages/        Login, Classes, Mapping, Import, Dashboard,
-      │                GapAnalysis, StudentProfile, SupportFlags, Reports
-      ├─ hooks/
-      └─ utils/        color scale, formatters
+├─ backend/
+│  └─ tudlo/                         Spring Boot API
+│     ├─ pom.xml
+│     └─ src/
+│        ├─ main/java/com/csit321G6/groufings/tudlo/
+│        │  ├─ TudloApplication.java
+│        │  ├─ config/               application and security configuration
+│        │  ├─ common/               shared CRUD base classes and API errors
+│        │  ├─ controller/           REST endpoints
+│        │  ├─ dto/                  request and response data transfer objects
+│        │  ├─ entity/               JPA entities and domain enums
+│        │  ├─ repo/                 Spring Data repositories
+│        │  └─ service/              business logic
+│        ├─ main/resources/
+│        │  ├─ application.properties
+│        │  └─ db/migration/
+│        └─ test/java/com/csit321G6/groufings/tudlo/
+│           └─ TudloApplicationTests.java
+└─ frontend/
+   └─ tudlo/                          React app
+      ├─ package.json
+      ├─ vite.config.js
+      ├─ public/
+      └─ src/
+         ├─ App.jsx
+         ├─ App.css
+         ├─ index.css
+         ├─ main.jsx
+         └─ assets/
 ```
 
-The backend is organized by **feature package** (not by layer) so each team member owns whole folders and merge conflicts stay low.
+The backend uses a **layer-based package structure**: controllers handle HTTP requests, services contain business logic, repositories access persisted data, entities represent the domain, and DTOs define request and response data. Shared classes and configuration remain in `common/` and `config/`.
 
 ## Getting Started
 
