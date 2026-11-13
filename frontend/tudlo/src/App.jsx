@@ -1,29 +1,77 @@
-import { useState } from 'react'
-import Sidebar from './components/Sidebar.jsx'
-import Header from './components/Header.jsx'
-import PlaceholderPage from './components/PlaceholderPage.jsx'
+import { useState, useEffect } from 'react'
+import { MainLayout } from '@/layout/MainLayout.jsx'
+import { LoginPage } from '@/pages/Login.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import ImportData from './pages/ImportData.jsx'
 import TopicMapping from './pages/TopicMapping.jsx'
+import { PlaceholderPage } from './components/shared/PlaceholderPage.jsx'
 
 function App() {
-  const [page, setPage] = useState('dashboard') // which page is showing
+  const [role, setRole] = useState(null)
+  const [page, setPage] = useState(null)
+  const [userName, setUserName] = useState('')
+
+  // Check for saved auth on mount
+  useEffect(() => {
+    const savedRole = localStorage.getItem('tudlo_role')
+    const savedName = localStorage.getItem('tudlo_userName')
+    if (savedRole) {
+      setRole(savedRole)
+      setUserName(savedName || '')
+      // Set default page based on role
+      if (savedRole === 'admin') setPage('Users')
+      else if (savedRole === 'teacher') setPage('Dashboard')
+      else if (savedRole === 'student') setPage('My Progress')
+    }
+  }, [])
+
+  const handleLogin = (matchedRole) => {
+    const names = { admin: 'Admin User', teacher: 'Prof. Garcia', student: 'Alex Rivera' }
+    setRole(matchedRole)
+    setUserName(names[matchedRole])
+    localStorage.setItem('tudlo_role', matchedRole)
+    localStorage.setItem('tudlo_userName', names[matchedRole])
+    // Set default page based on role
+    if (matchedRole === 'admin') setPage('Users')
+    else if (matchedRole === 'teacher') setPage('Dashboard')
+    else if (matchedRole === 'student') setPage('My Progress')
+  }
+
+  const handleLogout = () => {
+    setRole(null)
+    setUserName('')
+    setPage(null)
+    localStorage.removeItem('tudlo_role')
+    localStorage.removeItem('tudlo_userName')
+  }
+
+  const handleNavigate = (label) => setPage(label)
+
+  if (!role) {
+    return <LoginPage onLogin={handleLogin} />
+  }
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar page={page} setPage={setPage} />
-      <div className="flex-1">
-        <Header page={page} />
-        <main className="p-6">
-          {page === 'dashboard' && <Dashboard setPage={setPage} />}
-          {page === 'import' && <ImportData setPage={setPage} />}
-          {page === 'topics' && <TopicMapping />}
-          {page === 'gaps' && <PlaceholderPage title="Learning Gaps" />}
-          {page === 'students' && <PlaceholderPage title="Students" />}
-          {page === 'support' && <PlaceholderPage title="Support" />}
-        </main>
-      </div>
-    </div>
+    <MainLayout
+      role={role}
+      page={page}
+      userName={userName}
+      onNavigate={handleNavigate}
+      onLogout={handleLogout}
+    >
+      {page === 'Dashboard' && <Dashboard role={role} />}
+      {page === 'Import Data' && <ImportData />}
+      {page === 'Topic Mapping' && <TopicMapping />}
+      {page === 'Learning Gaps' && <PlaceholderPage title="Learning Gaps" />}
+      {page === 'Students' && <PlaceholderPage title="Students" />}
+      {page === 'Support' && <PlaceholderPage title="Support" />}
+      {page === 'Users' && <PlaceholderPage title="Users" />}
+      {page === 'System Maintenance' && <PlaceholderPage title="System Maintenance" />}
+      {/* Student pages */}
+      {page === 'My Progress' && <PlaceholderPage title="My Progress" />}
+      {page === 'Topics to Review' && <PlaceholderPage title="Topics to Review" />}
+      {page === 'My Submissions' && <PlaceholderPage title="My Submissions" />}
+    </MainLayout>
   )
 }
 
