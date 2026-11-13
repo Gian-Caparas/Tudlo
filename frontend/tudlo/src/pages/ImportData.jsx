@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { importSummary, validationRows } from '../mockdata/mockData.js'
 
-function ImportData() {
+function ImportData({ setPage }) {
   const [step, setStep] = useState(1) // 1 = upload, 2 = validate, 3 = done
   const validCount = importSummary.total - importSummary.invalid
 
@@ -92,9 +91,9 @@ function ImportData() {
           <button onClick={() => setStep(1)} className="mr-3 border px-3 py-1">
             Import another file
           </button>
-          <Link to="/gaps" className="border px-3 py-1">
+          <button onClick={() => setPage('gaps')} className="border px-3 py-1">
             View learning gaps
-          </Link>
+          </button>
         </div>
       )}
     </div>

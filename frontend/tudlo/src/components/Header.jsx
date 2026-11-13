@@ -1,23 +1,18 @@
-import { useLocation } from 'react-router-dom'
-
-// path in the URL -> name shown in the breadcrumb
+// page id -> name shown in the breadcrumb
 const pageNames = {
-  '/dashboard': 'Dashboard',
-  '/import': 'Import Data',
-  '/topics': 'Topic Mapping',
-  '/gaps': 'Learning Gaps',
-  '/students': 'Students',
-  '/support': 'Support',
+  dashboard: 'Dashboard',
+  import: 'Import Data',
+  topics: 'Topic Mapping',
+  gaps: 'Learning Gaps',
+  students: 'Students',
+  support: 'Support',
 }
 
-function Header() {
-  const location = useLocation()
-  const pageName = pageNames[location.pathname] || ''
-
+function Header({ page }) {
   return (
     <header className="flex items-center justify-between border-b px-6 py-3">
       <p className="text-sm">
-        CSIT321 - G6 &gt; <span className="font-bold">{pageName}</span>
+        CSIT321 - G6 &gt; <span className="font-bold">{pageNames[page]}</span>
       </p>
       <div className="flex items-center gap-3 text-sm">
         <div>

@@ -1,7 +1,6 @@
-import { Link } from 'react-router-dom'
 import { stats, performance, needsSupport } from '../mockdata/mockData.js'
 
-function Dashboard() {
+function Dashboard({ setPage }) {
   return (
     <div>
       <p className="text-sm">CSIT321 - G6</p>
@@ -47,9 +46,9 @@ function Dashboard() {
       <ul className="mb-6 max-w-xl">
         {needsSupport.map((s) => (
           <li key={s.name} className="border-b py-2">
-            <Link to="/students" className="block">
+            <button onClick={() => setPage('students')} className="block w-full text-left">
               <span className="font-bold">{s.name}</span> - {s.detail} <span className="text-sm">({s.tag})</span>
-            </Link>
+            </button>
           </li>
         ))}
       </ul>
@@ -60,7 +59,7 @@ function Dashboard() {
         <p>
           Programming Basics is the lowest-performing topic across the class at 58%. Consider revisiting variables
           and control flow before the next assessment.{' '}
-          <Link to="/gaps" className="underline">View learning gaps</Link>
+          <button onClick={() => setPage('gaps')} className="underline">View learning gaps</button>
         </p>
       </div>
     </div>
