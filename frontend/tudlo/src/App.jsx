@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard.jsx'
 import ImportData from './pages/ImportData.jsx'
 import TopicMapping from './pages/TopicMapping.jsx'
 import { PlaceholderPage } from './components/shared/PlaceholderPage.jsx'
+import MyProgress from './pages/MyProgress.jsx'
 
 function App() {
   const [role, setRole] = useState(null)
@@ -68,7 +69,7 @@ function App() {
       {page === 'Users' && <PlaceholderPage title="Users" />}
       {page === 'System Maintenance' && <PlaceholderPage title="System Maintenance" />}
       {/* Student pages */}
-      {page === 'My Progress' && <PlaceholderPage title="My Progress" />}
+      {page === 'My Progress' && <MyProgress onNavigate={handleNavigate} />}
       {page === 'Topics to Review' && <PlaceholderPage title="Topics to Review" />}
       {page === 'My Submissions' && <PlaceholderPage title="My Submissions" />}
     </MainLayout>

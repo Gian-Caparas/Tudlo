@@ -61,3 +61,32 @@ export const startingItems = [
   { name: 'Quiz 2 · Q1', hint: 'Build a responsive layout', topic: '', outcome: '', maxScore: 15 },
   { name: 'Midterm · Q4', hint: 'Analyze time complexity', topic: '', outcome: '', maxScore: 20 },
 ]
+
+// Student pages: My Progress
+export const studentProgress = {
+  firstName: 'Maria',
+  overallAverage: 67,
+  assessmentCount: 4,
+  pointsSinceLastQuiz: 9,
+  latestWin: {
+    title: 'Project Milestone 1 was your best result yet.',
+    detail: 'You scored 74%, continuing your upward trend after the midterm.',
+  },
+  scoresOverTime: [
+    { name: 'Quiz 1', percent: 62 },
+    { name: 'Quiz 2', percent: 58 },
+    { name: 'Midterm', percent: 65 },
+    { name: 'Milestone 1', percent: 74 },
+  ],
+  topicScores: [
+    { name: 'UI Design', percent: 92 },
+    { name: 'Programming Basics', percent: 48 },
+    { name: 'Databases', percent: 69 },
+    { name: 'Web Development', percent: 74 },
+    { name: 'Algorithms', percent: 56 },
+  ],
+  nextStep: {
+    title: 'A good next step',
+    detail: 'Spend 20 minutes reviewing loops and conditional logic. Your recent support session already moved this topic up by 20 points.',
+  },
+}
