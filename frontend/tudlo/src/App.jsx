@@ -6,6 +6,7 @@ import ImportData from './pages/ImportData.jsx'
 import TopicMapping from './pages/TopicMapping.jsx'
 import { PlaceholderPage } from './components/shared/PlaceholderPage.jsx'
 import MyProgress from './pages/MyProgress.jsx'
+import TopicsToReview from './pages/TopicsToReview.jsx'
 
 function App() {
   const [role, setRole] = useState(null)
@@ -27,7 +28,7 @@ function App() {
   }, [])
 
   const handleLogin = (matchedRole) => {
-    const names = { admin: 'Admin User', teacher: 'Prof. Garcia', student: 'Alex Rivera' }
+    const names = { admin: 'Admin User', teacher: 'Prof. Garcia', student: 'Maria Santos' }
     setRole(matchedRole)
     setUserName(names[matchedRole])
     localStorage.setItem('tudlo_role', matchedRole)
@@ -70,7 +71,7 @@ function App() {
       {page === 'System Maintenance' && <PlaceholderPage title="System Maintenance" />}
       {/* Student pages */}
       {page === 'My Progress' && <MyProgress onNavigate={handleNavigate} />}
-      {page === 'Topics to Review' && <PlaceholderPage title="Topics to Review" />}
+      {page === 'Topics to Review' && <TopicsToReview />}
       {page === 'My Submissions' && <PlaceholderPage title="My Submissions" />}
     </MainLayout>
   )

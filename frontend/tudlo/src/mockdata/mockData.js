@@ -90,3 +90,45 @@ export const studentProgress = {
     detail: 'Spend 20 minutes reviewing loops and conditional logic. Your recent support session already moved this topic up by 20 points.',
   },
 }
+
+// Student pages: Topics to Review
+export const topicsToReview = {
+  heading: 'Recommended focus areas',
+  topics: [
+    {
+      name: 'Programming Basics',
+      percent: 48,
+      outcome: 'Use loops to repeat a set of instructions',
+      tip: 'Practice tracing nested loops step by step.',
+      tag: 'High Priority',
+      tone: 'danger',
+    },
+    {
+      name: 'Algorithms',
+      percent: 56,
+      outcome: 'Compare algorithms using time complexity',
+      tip: 'Review Big O examples from the midterm.',
+      tag: 'Review Next',
+      tone: 'warning',
+    },
+    {
+      name: 'Databases',
+      percent: 69,
+      outcome: 'Normalize relational data structures',
+      tip: 'Try one more third normal form exercise.',
+      tag: 'Keep Practicing',
+      tone: 'neutral',
+    },
+  ],
+  supportSession: {
+    label: 'TEACHER SUPPORT',
+    title: 'Your support activity',
+    date: 'February 14, 2025',
+    type: 'Peer Tutoring',
+    topic: 'Programming Basics · Loops practice',
+    summary: 'Paired guided exercises focused on nested loops and tracing program flow.',
+    before: 48,
+    after: 68,
+    note: 'Improved By 20 Points',
+  },
+}
