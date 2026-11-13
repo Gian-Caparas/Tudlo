@@ -132,3 +132,16 @@ export const topicsToReview = {
     note: 'Improved By 20 Points',
   },
 }
+
+// Student pages: My Submissions
+export const mySubmissions = {
+  description: 'Track your assessment scores and submission status.',
+  rows: [
+    { name: 'Quiz 1', due: 'Jan 22, 2025', score: 62, status: 'On Time', tone: 'success' },
+    { name: 'Quiz 2', due: 'Feb 05, 2025', score: 58, status: 'Late', tone: 'warning' },
+    { name: 'Midterm', due: 'Feb 19, 2025', score: 65, status: 'On Time', tone: 'success' },
+    { name: 'Project Milestone 1', due: 'Mar 03, 2025', score: 74, status: 'On Time', tone: 'success' },
+    { name: 'Project Milestone 2', due: 'Mar 21, 2025', score: null, status: 'Overdue', tone: 'danger' },
+    { name: 'Final Project', due: 'Apr 12, 2025', score: null, status: 'Missing', tone: 'danger' },
+  ],
+}

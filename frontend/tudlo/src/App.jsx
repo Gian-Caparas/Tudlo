@@ -7,6 +7,7 @@ import TopicMapping from './pages/TopicMapping.jsx'
 import { PlaceholderPage } from './components/shared/PlaceholderPage.jsx'
 import MyProgress from './pages/MyProgress.jsx'
 import TopicsToReview from './pages/TopicsToReview.jsx'
+import MySubmissions from './pages/MySubmissions.jsx'
 
 function App() {
   const [role, setRole] = useState(null)
@@ -72,7 +73,7 @@ function App() {
       {/* Student pages */}
       {page === 'My Progress' && <MyProgress onNavigate={handleNavigate} />}
       {page === 'Topics to Review' && <TopicsToReview />}
-      {page === 'My Submissions' && <PlaceholderPage title="My Submissions" />}
+      {page === 'My Submissions' && <MySubmissions />}
     </MainLayout>
   )
 }
