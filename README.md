@@ -164,11 +164,13 @@ spring.servlet.multipart.max-file-size=5MB
 spring.servlet.multipart.max-request-size=5MB
 ```
 
-### Frontend: `frontend/.env`
+### Frontend: `frontend/tudlo/.env`
 
 ```env
 VITE_API_URL=http://localhost:8080/api
 ```
+
+The login form sends credentials to `POST /auth/login` and uses the returned user's name and role. Test-account buttons only prefill the email address; enter the password configured for that user.
 
 > Never commit real passwords or JWT secrets. Use environment variables or an `application-local.yml` listed in `.gitignore`.
 
@@ -220,7 +222,7 @@ All endpoints are prefixed with `/api`. Full details are in Swagger UI.
 
 | Feature | Endpoints |
 |---|---|
-| Auth | `POST /auth/login`, `GET /auth/me` |
+| Auth | `POST /auth/login` |
 | Classes and students | `GET/POST /classes`, `PUT/DELETE /classes/{id}`, `GET/POST /classes/{id}/students` |
 | Curriculum | `GET/POST /classes/{id}/topics`, `GET/POST /classes/{id}/outcomes` |
 | Assessments and mapping | `GET/POST /classes/{id}/assessments`, `GET /assessments/{id}/items`, `PUT /assessments/{id}/mapping` |

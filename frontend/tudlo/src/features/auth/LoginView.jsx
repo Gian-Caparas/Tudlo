@@ -5,7 +5,7 @@ import { authService } from "@/services/authService";
 export function LoginView({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(false);
+  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
@@ -36,13 +36,13 @@ export function LoginView({ onLogin }) {
   function handleEmailChange(e) {
     setEmail(e.target.value);
     if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: validateEmail(e.target.value) }));
-    if (error) setError(false);
+    if (error) setError("");
   }
 
   function handlePasswordChange(e) {
     setPassword(e.target.value);
     if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: validatePassword(e.target.value) }));
-    if (error) setError(false);
+    if (error) setError("");
   }
 
   async function submit(e) {
@@ -50,24 +50,18 @@ export function LoginView({ onLogin }) {
     if (!validateForm()) return;
 
     setLoading(true);
-    setError(false);
+    setError("");
 
-    // Simulate network delay
-    await new Promise(r => setTimeout(r, 500));
-
-    const matchedRole = authService.authenticate(email, password);
-    setLoading(false);
-
-    if (matchedRole) onLogin(matchedRole);
-    else setError(true);
+    try {
+      const user = await authService.login(email, password);
+      onLogin(user);
+    } catch (loginError) {
+      setError(loginError.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function fill(role) {
-    setEmail(authService.accounts[role].email);
-    setPassword(authService.accounts[role].password);
-    setError(false);
-    setFieldErrors({ email: "", password: "" });
-  }
 
   return (
     <div className="login-page">
@@ -105,7 +99,7 @@ export function LoginView({ onLogin }) {
               <Icon name="alert" aria-hidden="true" />
               <div>
                 <strong>We couldn't sign you in</strong>
-                <span>Check your email and password, then try again.</span>
+                <span>{error}</span>
               </div>
             </div>
           )}
@@ -171,32 +165,7 @@ export function LoginView({ onLogin }) {
               <>Sign in <span aria-hidden="true">→</span></>
             )}
           </button>
-          <div className="divider">
-            <span>Explore with a demo account</span>
-          </div>
-          <div className="demo-buttons" role="group" aria-label="Demo accounts">
-            <button type="button" onClick={() => fill("admin")} disabled={loading} aria-label="Demo Admin - Manage users & system">
-              <span className="demo-icon" aria-hidden="true">A</span>
-              <span>
-                <b>Demo Admin</b>
-                <small>Manage users & system</small>
-              </span>
-            </button>
-            <button type="button" onClick={() => fill("teacher")} disabled={loading} aria-label="Demo Teacher - Analyze class learning">
-              <span className="demo-icon" aria-hidden="true">T</span>
-              <span>
-                <b>Demo Teacher</b>
-                <small>Analyze class learning</small>
-              </span>
-            </button>
-            <button type="button" onClick={() => fill("student")} disabled={loading} aria-label="Demo Student - View personal progress">
-              <span className="demo-icon" aria-hidden="true">S</span>
-              <span>
-                <b>Demo Student</b>
-                <small>View personal progress</small>
-              </span>
-            </button>
-          </div>
+          
         </form>
       </div>
     </div>

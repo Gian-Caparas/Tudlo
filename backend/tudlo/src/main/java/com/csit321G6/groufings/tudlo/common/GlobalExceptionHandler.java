@@ -21,6 +21,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
     }
 
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ApiError> unauthorized(InvalidCredentialsException ex) {
+        return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), null);
+    }
+
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ApiError> badRequest(BadRequestException ex) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), null);

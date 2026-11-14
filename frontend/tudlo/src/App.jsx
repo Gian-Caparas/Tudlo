@@ -28,12 +28,12 @@ function App() {
     }
   }, [])
 
-  const handleLogin = (matchedRole) => {
-    const names = { admin: 'Admin User', teacher: 'Prof. Garcia', student: 'Maria Santos' }
+  const handleLogin = (user) => {
+    const matchedRole = user.userType.toLowerCase()
     setRole(matchedRole)
-    setUserName(names[matchedRole])
+    setUserName(user.fullName)
     localStorage.setItem('tudlo_role', matchedRole)
-    localStorage.setItem('tudlo_userName', names[matchedRole])
+    localStorage.setItem('tudlo_userName', user.fullName)
     // Set default page based on role
     if (matchedRole === 'admin') setPage('Users')
     else if (matchedRole === 'teacher') setPage('Dashboard')
