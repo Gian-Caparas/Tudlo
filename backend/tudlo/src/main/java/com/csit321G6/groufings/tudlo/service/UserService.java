@@ -6,7 +6,7 @@ import com.csit321G6.groufings.tudlo.dto.UserDto;
 import com.csit321G6.groufings.tudlo.entity.User;
 import com.csit321G6.groufings.tudlo.entity.UserStatus;
 import com.csit321G6.groufings.tudlo.repo.UserRepository;
-
+import java.util.Locale;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -39,8 +39,15 @@ public class UserService extends CrudService<User, UserDto.Request, UserDto.Resp
 
     @Override
     protected void apply(User entity, UserDto.Request request) {
+        String email = request.email().trim().toLowerCase(Locale.ROOT);
+        repository.findByEmailIgnoreCase(email)
+                .filter(existing -> !existing.getId().equals(entity.getId()))
+                .ifPresent(existing -> {
+                    throw new BadRequestException("A user with this email already exists");
+                });
+
         entity.setFullName(request.fullName());
-        entity.setEmail(request.email());
+        entity.setEmail(email);
         entity.setUserType(request.userType());
         if (request.status() != null) {
             entity.setStatus(request.status());

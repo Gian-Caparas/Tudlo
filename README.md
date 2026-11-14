@@ -125,13 +125,18 @@ For local development, Hibernate creates or updates the tables when the backend 
 
 ### 3. Run the backend
 
-```bash
-cd backend
-./mvnw spring-boot:run
+```powershell
+cd backend\tudlo
+$env:APP_BOOTSTRAP_ADMIN_PASSWORD = 'Admin123'
+.\mvnw.cmd spring-boot:run
 ```
 
-- API: http://localhost:8080
-- Swagger UI: http://localhost:8080/swagger-ui/index.html
+- API: http://localhost:8081
+- Swagger UI: http://localhost:8081/swagger-ui/index.html
+
+On first startup, Tudlo creates the default active administrator if `admin@gmail.com` does not exist. The password is read from `APP_BOOTSTRAP_ADMIN_PASSWORD`; set it to `Admin123` for the requested default. The stored password is BCrypt-hashed. Keep the environment variable local and do not commit it.
+
+Sign in with `POST /api/auth/login` using either `{"username":"admin@gmail.com","password":"Admin123"}` or the equivalent `email` property. Use the returned bearer token for `/api/users`. Only Admin accounts can view, create, update, or delete users; admins can create users with `ADMIN`, `TEACHER`, or `STUDENT` types.
 
 ### 4. Run the frontend
 
@@ -142,8 +147,6 @@ npm run dev
 ```
 
 - App: http://localhost:5173
-
-No demo users are seeded. Create a user through the API before testing dependent records.
 
 ## Configuration
 
@@ -157,9 +160,10 @@ spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
 spring.jpa.hibernate.ddl-auto=update
 spring.flyway.enabled=false
 
-app.jwt.secret=${JWT_SECRET:change-this-to-a-long-random-string}
+app.jwt.secret=${APP_JWT_SECRET:change-this-to-a-long-random-string}
 app.jwt.expiration-ms=86400000
 app.cors.allowed-origin=http://localhost:5173
+app.bootstrap-admin.password=${APP_BOOTSTRAP_ADMIN_PASSWORD:}
 spring.servlet.multipart.max-file-size=5MB
 spring.servlet.multipart.max-request-size=5MB
 ```
@@ -167,7 +171,7 @@ spring.servlet.multipart.max-request-size=5MB
 ### Frontend: `frontend/.env`
 
 ```env
-VITE_API_URL=http://localhost:8080/api
+VITE_API_URL=http://localhost:8081/api
 ```
 
 > Never commit real passwords or JWT secrets. Use environment variables or an `application-local.yml` listed in `.gitignore`.
@@ -220,7 +224,7 @@ All endpoints are prefixed with `/api`. Full details are in Swagger UI.
 
 | Feature | Endpoints |
 |---|---|
-| Auth | `POST /auth/login`, `GET /auth/me` |
+| Auth and user management | `POST /auth/login`, `GET /auth/me`, Admin-only `GET/POST /users`, `GET/PUT/DELETE /users/{id}` |
 | Classes and students | `GET/POST /classes`, `PUT/DELETE /classes/{id}`, `GET/POST /classes/{id}/students` |
 | Curriculum | `GET/POST /classes/{id}/topics`, `GET/POST /classes/{id}/outcomes` |
 | Assessments and mapping | `GET/POST /classes/{id}/assessments`, `GET /assessments/{id}/items`, `PUT /assessments/{id}/mapping` |
