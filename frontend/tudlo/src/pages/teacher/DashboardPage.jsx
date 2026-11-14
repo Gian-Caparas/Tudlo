@@ -1,9 +1,9 @@
-import { PageHeader } from '../components/shared/PageHeader.jsx'
-import { Badge } from '../components/ui/Badge.jsx'
-import { Avatar } from '../components/ui/Avatar.jsx'
-import { Icon } from '../components/ui/Icon.jsx'
-import { LineChart } from '../components/ui/LineChart.jsx'
-import { stats, performance, needsSupport } from '../mockdata/mockData.js'
+import { PageHeader } from '@/components/shared/PageHeader.jsx'
+import { Badge } from '@/components/ui/Badge.jsx'
+import { Avatar } from '@/components/ui/Avatar.jsx'
+import { Icon } from '@/components/ui/Icon.jsx'
+import { LineChart } from '@/components/ui/LineChart.jsx'
+import { stats, performance, needsSupport } from '@/mockdata/mockData.js'
 
 // Props: one stat card (destructured props)
 function StatCard({ label, value, note, icon, up, attention }) {
@@ -51,7 +51,7 @@ function SupportRow({ student, onOpen }) {
   )
 }
 
-function Dashboard({ onNavigate }) {
+function DashboardPage({ onNavigate }) {
   return (
     <div>
       <PageHeader
@@ -107,4 +107,4 @@ function Dashboard({ onNavigate }) {
   )
 }
 
-export default Dashboard
+export default DashboardPage

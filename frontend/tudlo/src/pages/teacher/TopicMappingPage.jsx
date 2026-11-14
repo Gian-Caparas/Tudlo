@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { PageHeader } from '../components/shared/PageHeader.jsx'
-import { Icon } from '../components/ui/Icon.jsx'
-import { topics, outcomes, startingItems } from '../mockdata/mockData.js'
+import { PageHeader } from '@/components/shared/PageHeader.jsx'
+import { Icon } from '@/components/ui/Icon.jsx'
+import { topics, outcomes, startingItems } from '@/mockdata/mockData.js'
 
 // One table row. It gets the item and a function to call when something changes.
 function MappingRow({ item, index, onChange }) {
@@ -40,7 +40,7 @@ function MappingRow({ item, index, onChange }) {
   )
 }
 
-function TopicMapping() {
+function TopicMappingPage() {
   const [items, setItems] = useState(startingItems)
   const [saved, setSaved] = useState(false)
 
@@ -113,4 +113,4 @@ function TopicMapping() {
   )
 }
 
-export default TopicMapping
+export default TopicMappingPage

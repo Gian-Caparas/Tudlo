@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { PageHeader } from '../components/shared/PageHeader.jsx'
-import { Badge } from '../components/ui/Badge.jsx'
-import { Icon } from '../components/ui/Icon.jsx'
-import { importSummary, validationRows } from '../mockdata/mockData.js'
+import { PageHeader } from '@/components/shared/PageHeader.jsx'
+import { Badge } from '@/components/ui/Badge.jsx'
+import { Icon } from '@/components/ui/Icon.jsx'
+import { importSummary, validationRows } from '@/mockdata/mockData.js'
 
 const stepNames = ['Upload CSV', 'Validate', 'Done']
 
@@ -36,7 +36,7 @@ function ValidationRow({ row }) {
   )
 }
 
-function ImportData({ onNavigate }) {
+function ImportDataPage({ onNavigate }) {
   const [step, setStep] = useState(1) // 1 = upload, 2 = validate, 3 = done
   const validCount = importSummary.total - importSummary.invalid
 
@@ -135,4 +135,4 @@ function ImportData({ onNavigate }) {
   )
 }
 
-export default ImportData
+export default ImportDataPage

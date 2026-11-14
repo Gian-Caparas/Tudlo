@@ -94,13 +94,22 @@ Tudlo/
       ├─ public/
       └─ src/
          ├─ App.jsx
-         ├─ App.css
-         ├─ index.css
          ├─ main.jsx
-         └─ assets/
+         ├─ components/
+         ├─ features/
+         ├─ layout/
+         ├─ mockdata/
+         ├─ pages/
+         │  ├─ admin/
+         │  ├─ student/
+         │  ├─ teacher/
+         │  └─ Login.jsx
+         └─ services/
 ```
 
 The backend uses a **layer-based package structure**: controllers handle HTTP requests, services contain business logic, repositories access persisted data, entities represent the domain, and DTOs define request and response data. Shared classes and configuration remain in `common/` and `config/`.
+
+The frontend keeps screen-level page components under `pages/`, grouped by role (`admin`, `teacher`, and `student`). Feature-specific modules and authentication components live under `features/`.
 
 ## Getting Started
 

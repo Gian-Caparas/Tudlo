@@ -1,11 +1,11 @@
-import { PageHeader } from '../components/shared/PageHeader.jsx'
-import { Badge } from '../components/ui/Badge.jsx'
-import { LineChart } from '../components/ui/LineChart.jsx'
-import { TopicBars } from '../components/ui/TopicBars.jsx'
-import { studentProgress } from '../mockdata/mockData.js'
-import { Icon } from '../components/ui/Icon.jsx'
+import { PageHeader } from '@/components/shared/PageHeader.jsx'
+import { Badge } from '@/components/ui/Badge.jsx'
+import { LineChart } from '@/components/ui/LineChart.jsx'
+import { TopicBars } from '@/components/ui/TopicBars.jsx'
+import { studentProgress } from '@/mockdata/mockData.js'
+import { Icon } from '@/components/ui/Icon.jsx'
 
-function MyProgress({ onNavigate }) {
+function MyProgressPage({ onNavigate }) {
   const data = studentProgress
 
   // Find the highest and lowest topic scores
@@ -79,4 +79,4 @@ function MyProgress({ onNavigate }) {
   )
 }
 
-export default MyProgress
+export default MyProgressPage

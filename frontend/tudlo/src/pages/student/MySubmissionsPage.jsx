@@ -1,8 +1,8 @@
-import { PageHeader } from '../components/shared/PageHeader.jsx'
-import { Badge } from '../components/ui/Badge.jsx'
-import { mySubmissions } from '../mockdata/mockData.js'
+import { PageHeader } from '@/components/shared/PageHeader.jsx'
+import { Badge } from '@/components/ui/Badge.jsx'
+import { mySubmissions } from '@/mockdata/mockData.js'
 
-function MySubmissions() {
+function MySubmissionsPage() {
   const { description, rows } = mySubmissions
 
   const submitted = rows.filter((r) => r.score !== null).length
@@ -62,4 +62,4 @@ function MySubmissions() {
   )
 }
 
-export default MySubmissions
+export default MySubmissionsPage

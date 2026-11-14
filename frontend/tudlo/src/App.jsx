@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react'
 import { MainLayout } from '@/layout/MainLayout.jsx'
 import { LoginPage } from '@/pages/Login.jsx'
-import Dashboard from './pages/Dashboard.jsx'
-import ImportData from './pages/ImportData.jsx'
-import TopicMapping from './pages/TopicMapping.jsx'
-import { PlaceholderPage } from './components/shared/PlaceholderPage.jsx'
-import MyProgress from './pages/MyProgress.jsx'
-import TopicsToReview from './pages/TopicsToReview.jsx'
-import MySubmissions from './pages/MySubmissions.jsx'
+import DashboardPage from '@/pages/teacher/DashboardPage.jsx'
+import ImportDataPage from '@/pages/teacher/ImportDataPage.jsx'
+import TopicMappingPage from '@/pages/teacher/TopicMappingPage.jsx'
+import LearningGapsPage from '@/pages/teacher/LearningGapsPage.jsx'
+import StudentsPage from '@/pages/teacher/StudentsPage.jsx'
+import SupportPage from '@/pages/teacher/SupportPage.jsx'
+import UsersPage from '@/pages/admin/UsersPage.jsx'
+import SystemMaintenancePage from '@/pages/admin/SystemMaintenancePage.jsx'
+import MyProgressPage from '@/pages/student/MyProgressPage.jsx'
+import TopicsToReviewPage from '@/pages/student/TopicsToReviewPage.jsx'
+import MySubmissionsPage from '@/pages/student/MySubmissionsPage.jsx'
 
 function App() {
   const [role, setRole] = useState(null)
@@ -62,18 +66,18 @@ function App() {
       onNavigate={handleNavigate}
       onLogout={handleLogout}
     >
-      {page === 'Dashboard' && <Dashboard role={role} />}
-      {page === 'Import Data' && <ImportData />}
-      {page === 'Topic Mapping' && <TopicMapping />}
-      {page === 'Learning Gaps' && <PlaceholderPage title="Learning Gaps" />}
-      {page === 'Students' && <PlaceholderPage title="Students" />}
-      {page === 'Support' && <PlaceholderPage title="Support" />}
-      {page === 'Users' && <PlaceholderPage title="Users" />}
-      {page === 'System Maintenance' && <PlaceholderPage title="System Maintenance" />}
+      {page === 'Dashboard' && <DashboardPage role={role} />}
+      {page === 'Import Data' && <ImportDataPage />}
+      {page === 'Topic Mapping' && <TopicMappingPage />}
+      {page === 'Learning Gaps' && <LearningGapsPage />}
+      {page === 'Students' && <StudentsPage />}
+      {page === 'Support' && <SupportPage />}
+      {page === 'Users' && <UsersPage />}
+      {page === 'System Maintenance' && <SystemMaintenancePage />}
       {/* Student pages */}
-      {page === 'My Progress' && <MyProgress onNavigate={handleNavigate} />}
-      {page === 'Topics to Review' && <TopicsToReview />}
-      {page === 'My Submissions' && <MySubmissions />}
+      {page === 'My Progress' && <MyProgressPage onNavigate={handleNavigate} />}
+      {page === 'Topics to Review' && <TopicsToReviewPage />}
+      {page === 'My Submissions' && <MySubmissionsPage />}
     </MainLayout>
   )
 }

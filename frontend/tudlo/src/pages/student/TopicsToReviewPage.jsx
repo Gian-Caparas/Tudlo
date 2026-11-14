@@ -1,8 +1,8 @@
-import { PageHeader } from '../components/shared/PageHeader.jsx'
-import { Badge } from '../components/ui/Badge.jsx'
-import { topicsToReview } from '../mockdata/mockData.js'
+import { PageHeader } from '@/components/shared/PageHeader.jsx'
+import { Badge } from '@/components/ui/Badge.jsx'
+import { topicsToReview } from '@/mockdata/mockData.js'
 
-function TopicsToReview() {
+function TopicsToReviewPage() {
   const { heading, topics, supportSession: s } = topicsToReview
 
   return (
@@ -62,4 +62,4 @@ function TopicsToReview() {
   )
 }
 
-export default TopicsToReview
+export default TopicsToReviewPage
