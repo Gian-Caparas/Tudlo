@@ -130,16 +130,7 @@ cd Tudlo
 ### 2. Set up the database
 
 Start the MySQL module in XAMPP, then create a database named `tudlo` in phpMyAdmin.
-For local development, Hibernate creates or updates the tables when the backend starts.
-
-Load the demo users and profile rows once (re-running is safe):
-
-```powershell
-cd backend\tudlo
-Get-Content -Raw .\src\main\resources\db\seed.sql | mariadb --user=root tudlo
-```
-
-The seed creates `admin@tudlo.test`, `teacher@tudlo.test`, and `student1@tudlo.test`, each with password `ChangeMe123!`. Change these demo credentials before using the database outside local development.
+For local development, Hibernate creates or updates the tables when the backend starts. On a fresh database, start the backend once to create the schema before loading the demo rows.
 
 ### 3. Configure and run the backend
 
@@ -165,6 +156,15 @@ cd backend\tudlo
 - API: http://localhost:8080
 
 On startup, Tudlo creates one active Developer only when both bootstrap variables are set and no Developer exists. Its password is BCrypt-hashed. The seed does not create a Developer. Never commit your real environment values or local properties.
+
+On a fresh database, stop the backend after its first successful startup, then load the demo users and profile rows (re-running is safe):
+
+```powershell
+cd backend\tudlo
+Get-Content -Raw .\src\main\resources\db\seed.sql | mariadb --user=root tudlo
+```
+
+The seed creates `admin@tudlo.test`, `teacher@tudlo.test`, and `student1@tudlo.test`, each with password `ChangeMe123!`. Change these demo credentials before using the database outside local development. Restart the backend after loading the seed.
 
 The checked-in [application-local.properties.example](backend/tudlo/src/main/resources/application-local.properties.example) documents local-only settings. To use it, copy it to `application-local.properties` in the same resources folder, set the referenced environment variables, and activate the `local` profile (for example, set `$env:SPRING_PROFILES_ACTIVE = 'local'` before launching). The real file is ignored by Git.
 
@@ -305,7 +305,7 @@ npm run build
 
 ### Manual full-stack login check
 
-1. Start MariaDB, create the `tudlo` database, and load `db/seed.sql` as described above.
+1. Start MariaDB, create the `tudlo` database, and initialize its tables/load `db/seed.sql` as described above.
 2. In one terminal, set `APP_JWT_SECRET` and start the backend with `.\mvnw.cmd spring-boot:run` from `backend\tudlo`.
 3. In a second terminal, run `npm run dev` from `frontend\tudlo`.
 4. Open http://localhost:5173 and sign in with `admin@tudlo.test` / `ChangeMe123!`.
