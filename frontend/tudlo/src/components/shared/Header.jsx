@@ -31,7 +31,7 @@ export function Header({ role, page, userName, onLogout }) {
           <span>{roleLabel}</span>
         </div>
         <Badge tone={role}>{role}</Badge>
-        <button className="logout" onClick={onLogout} title="Log out">
+        <button className="logout" type="button" onClick={onLogout} title="Log out" aria-label="Log out">
           <Icon name="logout" />
         </button>
       </div>

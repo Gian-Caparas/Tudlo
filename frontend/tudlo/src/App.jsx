@@ -52,6 +52,11 @@ function App() {
   const [page, setPage] = useState(null)
   const [mappingItems, setMappingItems] = useState(startingItems)
 
+  function handleLogout() {
+    setPage(null)
+    logout()
+  }
+
   if (authLoading && !role) {
     return <div className="flex min-h-screen items-center justify-center" role="status">Checking your session…</div>
   }
@@ -70,7 +75,7 @@ function App() {
       page={currentPage}
       userName={user?.fullName ?? user?.name ?? ''}
       onNavigate={setPage}
-      onLogout={logout}
+      onLogout={handleLogout}
     >
       {(authLoading || sessionError) && (
         <section
