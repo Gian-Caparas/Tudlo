@@ -1,5 +1,5 @@
-import { PlaceholderPage } from '@/components/shared/PlaceholderPage.jsx'
+import { AllUsers } from '@/features/users/AllUsers.jsx'
 
-export default function UsersPage() {
-  return <PlaceholderPage title="Users" />
+export default function UsersPage(props) {
+  return <AllUsers {...props} />
 }
