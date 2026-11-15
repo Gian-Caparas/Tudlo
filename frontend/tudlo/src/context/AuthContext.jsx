@@ -3,6 +3,7 @@ import { AuthContext } from '@/context/authContext.js'
 import { authService } from '@/services/authService.js'
 
 const SESSION_KEY = 'tudlo_session'
+const SESSION_VALIDATION_TIMEOUT_MS = 10000
 
 function readSession() {
   localStorage.removeItem('tudlo_role')
@@ -42,6 +43,7 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(initialState.session)
   const [authLoading, setAuthLoading] = useState(initialState.authLoading)
   const [sessionError, setSessionError] = useState('')
+  const [validationAttempt, setValidationAttempt] = useState(0)
   const validatedToken = useRef(null)
 
   const logout = useCallback((message = '') => {
@@ -58,6 +60,14 @@ export function AuthProvider({ children }) {
     setSessionError('')
   }, [])
 
+  const retrySessionValidation = useCallback(() => {
+    if (!session?.token) return
+    validatedToken.current = null
+    setSessionError('')
+    setAuthLoading(true)
+    setValidationAttempt((attempt) => attempt + 1)
+  }, [session])
+
   useEffect(() => {
     function handleSessionExpired() {
       logout('Your session expired. Please sign in again.')
@@ -71,7 +81,14 @@ export function AuthProvider({ children }) {
     if (validatedToken.current === session.token) return undefined
     validatedToken.current = session.token
     let active = true
-    authService.getCurrentUser(session.token)
+    let timedOut = false
+    const controller = new AbortController()
+    const timeoutId = window.setTimeout(() => {
+      timedOut = true
+      controller.abort()
+    }, SESSION_VALIDATION_TIMEOUT_MS)
+
+    authService.getCurrentUser(session.token, { signal: controller.signal })
       .then((currentUser) => {
         if (!active) return
         const nextSession = {
@@ -88,15 +105,22 @@ export function AuthProvider({ children }) {
         setSession(nextSession)
       })
       .catch((error) => {
+        if (!active) return
         if (error.status !== 401) setSessionError(error.message)
+        if (timedOut) {
+          setSessionError('Session verification timed out. Check that the backend is running and try again.')
+        }
       })
       .finally(() => {
+        window.clearTimeout(timeoutId)
         if (active) setAuthLoading(false)
       })
     return () => {
       active = false
+      window.clearTimeout(timeoutId)
+      controller.abort()
     }
-  }, [session])
+  }, [session, validationAttempt])
 
   const value = useMemo(() => ({
     token: session?.token ?? null,
@@ -109,7 +133,8 @@ export function AuthProvider({ children }) {
     setSessionError,
     login,
     logout,
-  }), [session, authLoading, sessionError, login, logout])
+    retrySessionValidation,
+  }), [session, authLoading, sessionError, login, logout, retrySessionValidation])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

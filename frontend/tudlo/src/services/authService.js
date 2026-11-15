@@ -9,7 +9,7 @@ export const authService = {
     })
   },
 
-  async getCurrentUser(token) {
-    return apiRequest('/auth/me', { token })
+  async getCurrentUser(token, options = {}) {
+    return apiRequest('/auth/me', { ...options, token })
   },
 }
