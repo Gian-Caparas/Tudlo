@@ -1,42 +1,31 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api'
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api';
 
-async function readJson(response) {
-  const contentType = response.headers.get('content-type') || ''
-  if (!contentType.includes('application/json')) return null
-  return response.json()
-}
-
-async function request(path, options = {}) {
-  const response = await fetch(`${API_URL}${path}`, options)
-  const data = await readJson(response)
-
-  if (!response.ok) {
-    const error = new Error(data?.message || `Request failed (${response.status})`)
-    error.status = response.status
-    throw error
-  }
-
-  return data
-}
+const testAccounts = [
+  { role: 'admin', email: 'maya@example.com' },
+  { role: 'teacher', email: 'gian@example.com' },
+  { role: 'student', email: 'jay@example.com' },
+];
 
 export const authService = {
-  async login(email, password) {
-    const data = await request('/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
+  testAccounts,
 
-    if (!data?.token || !data.userType) {
-      throw new Error('The login response is missing the token or user role.')
+  async login(email, password) {
+    let response;
+    try {
+      response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+    } catch {
+      throw new Error('Unable to reach the server. Check that the backend is running and try again.');
     }
 
-    return data
+    const body = await response.json().catch(() => null);
+    if (!response.ok) {
+      if (response.status === 401) throw new Error('Invalid email or password.');
+      throw new Error(body?.message || 'Sign in failed. Please try again.');
+    }
+    return body;
   },
-
-  getCurrentUser(token) {
-    return request('/auth/me', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-  },
-}
+};

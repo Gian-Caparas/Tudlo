@@ -1,4 +1,4 @@
-import { useState, useId } from "react";
+import { useState, useId, useEffect } from "react";
 import { Icon } from "@/components/ui/Icon.jsx";
 import { authService } from "@/services/authService";
 
@@ -6,6 +6,10 @@ export function LoginView({ onLogin, initialError = "" }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(initialError);
+
+  useEffect(() => {
+    setError(initialError);
+  }, [initialError]);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
@@ -52,14 +56,10 @@ export function LoginView({ onLogin, initialError = "" }) {
     setError("");
 
     try {
-      const user = await authService.login(email.trim(), password);
-      await onLogin(user);
-    } catch (requestError) {
-      setError(
-        requestError instanceof TypeError
-          ? "Unable to connect to Tudlo. Check that the backend is running."
-          : requestError.message || "Sign-in failed. Please try again."
-      );
+      const user = await authService.login(email, password);
+      onLogin(user);
+    } catch (loginError) {
+      setError(loginError.message);
     } finally {
       setLoading(false);
     }
@@ -167,6 +167,7 @@ export function LoginView({ onLogin, initialError = "" }) {
               <>Sign in <span aria-hidden="true">→</span></>
             )}
           </button>
+        
         </form>
       </div>
     </div>

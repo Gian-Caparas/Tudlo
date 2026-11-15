@@ -1,5 +1,6 @@
 package com.csit321G6.groufings.tudlo.dto;
 
+<<<<<<< HEAD
 import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -56,3 +57,19 @@ public class AuthDto {
         }
     }
 }
+=======
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
+public final class AuthDto {
+
+    private AuthDto() {
+    }
+
+    public record LoginRequest(
+            @NotBlank @Email String email,
+            @NotBlank String password
+    ) {
+    }
+}
+>>>>>>> origin/main

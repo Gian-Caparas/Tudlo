@@ -1,11 +1,18 @@
 import { useState, useEffect } from 'react'
+import { authService } from '@/services/authService.js'
 import { MainLayout } from '@/layout/MainLayout.jsx'
 import { LoginPage } from '@/pages/Login.jsx'
-import { authService } from '@/services/authService.js'
-import Dashboard from './pages/Dashboard.jsx'
-import ImportData from './pages/ImportData.jsx'
-import TopicMapping from './pages/TopicMapping.jsx'
-import { PlaceholderPage } from './components/shared/PlaceholderPage.jsx'
+import DashboardPage from '@/pages/teacher/DashboardPage.jsx'
+import ImportDataPage from '@/pages/teacher/ImportDataPage.jsx'
+import TopicMappingPage from '@/pages/teacher/TopicMappingPage.jsx'
+import LearningGapsPage from '@/pages/teacher/LearningGapsPage.jsx'
+import StudentsPage from '@/pages/teacher/StudentsPage.jsx'
+import SupportPage from '@/pages/teacher/SupportPage.jsx'
+import UsersPage from '@/pages/admin/UsersPage.jsx'
+import SystemMaintenancePage from '@/pages/admin/SystemMaintenancePage.jsx'
+import MyProgressPage from '@/pages/student/MyProgressPage.jsx'
+import TopicsToReviewPage from '@/pages/student/TopicsToReviewPage.jsx'
+import MySubmissionsPage from '@/pages/student/MySubmissionsPage.jsx'
 
 const roleHomePages = {
   admin: 'Users',
@@ -64,12 +71,15 @@ function App() {
   }, [])
 
   const handleLogin = (user) => {
-    const resolved = resolveRole(user.userType)
-    sessionStorage.setItem('tudlo_token', user.token)
-    setSessionError('')
-    setRole(resolved.role)
-    setPage(resolved.page)
+    const matchedRole = user.userType.toLowerCase()
+    setRole(matchedRole)
     setUserName(user.fullName)
+    localStorage.setItem('tudlo_role', matchedRole)
+    localStorage.setItem('tudlo_userName', user.fullName)
+    // Set default page based on role
+    if (matchedRole === 'admin') setPage('Users')
+    else if (matchedRole === 'teacher') setPage('Dashboard')
+    else if (matchedRole === 'student') setPage('My Progress')
   }
 
   const handleLogout = () => {
@@ -97,18 +107,18 @@ function App() {
       onNavigate={handleNavigate}
       onLogout={handleLogout}
     >
-      {page === 'Dashboard' && <Dashboard role={role} />}
-      {page === 'Import Data' && <ImportData />}
-      {page === 'Topic Mapping' && <TopicMapping />}
-      {page === 'Learning Gaps' && <PlaceholderPage title="Learning Gaps" />}
-      {page === 'Students' && <PlaceholderPage title="Students" />}
-      {page === 'Support' && <PlaceholderPage title="Support" />}
-      {page === 'Users' && <PlaceholderPage title="Users" />}
-      {page === 'System Maintenance' && <PlaceholderPage title="System Maintenance" />}
+      {page === 'Dashboard' && <DashboardPage role={role} />}
+      {page === 'Import Data' && <ImportDataPage />}
+      {page === 'Topic Mapping' && <TopicMappingPage />}
+      {page === 'Learning Gaps' && <LearningGapsPage />}
+      {page === 'Students' && <StudentsPage />}
+      {page === 'Support' && <SupportPage />}
+      {page === 'Users' && <UsersPage />}
+      {page === 'System Maintenance' && <SystemMaintenancePage />}
       {/* Student pages */}
-      {page === 'My Progress' && <PlaceholderPage title="My Progress" />}
-      {page === 'Topics to Review' && <PlaceholderPage title="Topics to Review" />}
-      {page === 'My Submissions' && <PlaceholderPage title="My Submissions" />}
+      {page === 'My Progress' && <MyProgressPage onNavigate={handleNavigate} />}
+      {page === 'Topics to Review' && <TopicsToReviewPage />}
+      {page === 'My Submissions' && <MySubmissionsPage />}
     </MainLayout>
   )
 }

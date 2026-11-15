@@ -94,13 +94,22 @@ Tudlo/
       ├─ public/
       └─ src/
          ├─ App.jsx
-         ├─ App.css
-         ├─ index.css
          ├─ main.jsx
-         └─ assets/
+         ├─ components/
+         ├─ features/
+         ├─ layout/
+         ├─ mockdata/
+         ├─ pages/
+         │  ├─ admin/
+         │  ├─ student/
+         │  ├─ teacher/
+         │  └─ Login.jsx
+         └─ services/
 ```
 
 The backend uses a **layer-based package structure**: controllers handle HTTP requests, services contain business logic, repositories access persisted data, entities represent the domain, and DTOs define request and response data. Shared classes and configuration remain in `common/` and `config/`.
+
+The frontend keeps screen-level page components under `pages/`, grouped by role (`admin`, `teacher`, and `student`). Feature-specific modules and authentication components live under `features/`.
 
 ## Getting Started
 
@@ -168,11 +177,13 @@ spring.servlet.multipart.max-file-size=5MB
 spring.servlet.multipart.max-request-size=5MB
 ```
 
-### Frontend: `frontend/.env`
+### Frontend: `frontend/tudlo/.env`
 
 ```env
 VITE_API_URL=http://localhost:8081/api
 ```
+
+The login form sends credentials to `POST /auth/login` and uses the returned user's name and role. Test-account buttons only prefill the email address; enter the password configured for that user.
 
 > Never commit real passwords or JWT secrets. Use environment variables or an `application-local.yml` listed in `.gitignore`.
 
@@ -224,7 +235,11 @@ All endpoints are prefixed with `/api`. Full details are in Swagger UI.
 
 | Feature | Endpoints |
 |---|---|
+<<<<<<< HEAD
 | Auth and user management | `POST /auth/login`, `GET /auth/me`, Admin-only `GET/POST /users`, `GET/PUT/DELETE /users/{id}` |
+=======
+| Auth | `POST /auth/login` |
+>>>>>>> origin/main
 | Classes and students | `GET/POST /classes`, `PUT/DELETE /classes/{id}`, `GET/POST /classes/{id}/students` |
 | Curriculum | `GET/POST /classes/{id}/topics`, `GET/POST /classes/{id}/outcomes` |
 | Assessments and mapping | `GET/POST /classes/{id}/assessments`, `GET /assessments/{id}/items`, `PUT /assessments/{id}/mapping` |

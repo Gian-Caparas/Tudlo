@@ -61,3 +61,87 @@ export const startingItems = [
   { name: 'Quiz 2 · Q1', hint: 'Build a responsive layout', topic: '', outcome: '', maxScore: 15 },
   { name: 'Midterm · Q4', hint: 'Analyze time complexity', topic: '', outcome: '', maxScore: 20 },
 ]
+
+// Student pages: My Progress
+export const studentProgress = {
+  firstName: 'Maria',
+  overallAverage: 67,
+  assessmentCount: 4,
+  pointsSinceLastQuiz: 9,
+  latestWin: {
+    title: 'Project Milestone 1 was your best result yet.',
+    detail: 'You scored 74%, continuing your upward trend after the midterm.',
+  },
+  scoresOverTime: [
+    { name: 'Quiz 1', percent: 62 },
+    { name: 'Quiz 2', percent: 58 },
+    { name: 'Midterm', percent: 65 },
+    { name: 'Milestone 1', percent: 74 },
+  ],
+  topicScores: [
+    { name: 'UI Design', percent: 92 },
+    { name: 'Programming Basics', percent: 48 },
+    { name: 'Databases', percent: 69 },
+    { name: 'Web Development', percent: 74 },
+    { name: 'Algorithms', percent: 56 },
+  ],
+  nextStep: {
+    title: 'A good next step',
+    detail: 'Spend 20 minutes reviewing loops and conditional logic. Your recent support session already moved this topic up by 20 points.',
+  },
+}
+
+// Student pages: Topics to Review
+export const topicsToReview = {
+  heading: 'Recommended focus areas',
+  topics: [
+    {
+      name: 'Programming Basics',
+      percent: 48,
+      outcome: 'Use loops to repeat a set of instructions',
+      tip: 'Practice tracing nested loops step by step.',
+      tag: 'High Priority',
+      tone: 'danger',
+    },
+    {
+      name: 'Algorithms',
+      percent: 56,
+      outcome: 'Compare algorithms using time complexity',
+      tip: 'Review Big O examples from the midterm.',
+      tag: 'Review Next',
+      tone: 'warning',
+    },
+    {
+      name: 'Databases',
+      percent: 69,
+      outcome: 'Normalize relational data structures',
+      tip: 'Try one more third normal form exercise.',
+      tag: 'Keep Practicing',
+      tone: 'neutral',
+    },
+  ],
+  supportSession: {
+    label: 'TEACHER SUPPORT',
+    title: 'Your support activity',
+    date: 'February 14, 2025',
+    type: 'Peer Tutoring',
+    topic: 'Programming Basics · Loops practice',
+    summary: 'Paired guided exercises focused on nested loops and tracing program flow.',
+    before: 48,
+    after: 68,
+    note: 'Improved By 20 Points',
+  },
+}
+
+// Student pages: My Submissions
+export const mySubmissions = {
+  description: 'Track your assessment scores and submission status.',
+  rows: [
+    { name: 'Quiz 1', due: 'Jan 22, 2025', score: 62, status: 'On Time', tone: 'success' },
+    { name: 'Quiz 2', due: 'Feb 05, 2025', score: 58, status: 'Late', tone: 'warning' },
+    { name: 'Midterm', due: 'Feb 19, 2025', score: 65, status: 'On Time', tone: 'success' },
+    { name: 'Project Milestone 1', due: 'Mar 03, 2025', score: 74, status: 'On Time', tone: 'success' },
+    { name: 'Project Milestone 2', due: 'Mar 21, 2025', score: null, status: 'Overdue', tone: 'danger' },
+    { name: 'Final Project', due: 'Apr 12, 2025', score: null, status: 'Missing', tone: 'danger' },
+  ],
+}
