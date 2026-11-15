@@ -1,29 +1,21 @@
 package com.csit321G6.groufings.tudlo.controller;
 
 import com.csit321G6.groufings.tudlo.dto.AuthDto;
-<<<<<<< HEAD
+import com.csit321G6.groufings.tudlo.config.AuthenticatedUser;
 import com.csit321G6.groufings.tudlo.service.AuthService;
 import jakarta.validation.Valid;
-import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-=======
-import com.csit321G6.groufings.tudlo.dto.UserDto;
-import com.csit321G6.groufings.tudlo.service.AuthService;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
->>>>>>> origin/main
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-<<<<<<< HEAD
     private final AuthService authService;
 
     public AuthController(AuthService authService) {
@@ -32,26 +24,11 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthDto.LoginResponse> login(@Valid @RequestBody AuthDto.LoginRequest request) {
-        AuthDto.LoginResponse response = authService.login(request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(authService.login(request));
     }
 
     @GetMapping("/me")
-    public ResponseEntity<AuthDto.MeResponse> me(Authentication authentication) {
-        AuthDto.MeResponse response = authService.getCurrentUser(authentication.getName());
-        return ResponseEntity.ok(response);
+    public ResponseEntity<AuthDto.MeResponse> me(@AuthenticationPrincipal AuthenticatedUser user) {
+        return ResponseEntity.ok(authService.getCurrentUser(user.userId()));
     }
 }
-=======
-    private final AuthService service;
-
-    public AuthController(AuthService service) {
-        this.service = service;
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<UserDto.Response> login(@Valid @RequestBody AuthDto.LoginRequest request) {
-        return ResponseEntity.status(HttpStatus.OK).body(service.login(request));
-    }
-}
->>>>>>> origin/main
