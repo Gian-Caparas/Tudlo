@@ -7,9 +7,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.csit321G6.groufings.tudlo.common.JwtUtil;
+import com.csit321G6.groufings.tudlo.common.UserProfileLookup;
 import com.csit321G6.groufings.tudlo.common.exception.InvalidCredentialsException;
 import com.csit321G6.groufings.tudlo.dto.AuthDto;
-import com.csit321G6.groufings.tudlo.dto.UserDto;
 import com.csit321G6.groufings.tudlo.entity.User;
 import com.csit321G6.groufings.tudlo.entity.UserStatus;
 import com.csit321G6.groufings.tudlo.entity.UserType;
@@ -23,19 +24,29 @@ class AuthServiceTest {
 
     private final UserRepository repository = mock(UserRepository.class);
     private final PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
-    private final AuthService service = new AuthService(repository, passwordEncoder);
+    private final JwtUtil jwtUtil = mock(JwtUtil.class);
+    private final UserProfileLookup userProfileLookup = mock(UserProfileLookup.class);
+    private final AuthService service = new AuthService(repository, passwordEncoder, jwtUtil, userProfileLookup);
 
     @Test
     void loginReturnsUserWithoutPasswordHash() {
         User user = activeUser();
         when(repository.findByEmailIgnoreCase("maya@example.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("test-password", "encoded-password")).thenReturn(true);
+        when(jwtUtil.generateToken(1L, "maya@example.com", "ADMIN", null)).thenReturn("signed-token");
+        when(jwtUtil.getExpirySeconds()).thenReturn(86400L);
 
-        UserDto.Response response = service.login(new AuthDto.LoginRequest("maya@example.com", "test-password"));
+        AuthDto.LoginResponse response = service.login(new AuthDto.LoginRequest("maya@example.com", "test-password"));
 
-        assertEquals(1L, response.id());
-        assertEquals("Maya Santos", response.fullName());
-        assertEquals(UserType.ADMIN, response.userType());
+        assertEquals(1L, response.getId());
+        assertEquals(1L, response.getUserId());
+        assertEquals("Maya Santos", response.getFullName());
+        assertEquals("ADMIN", response.getUserType());
+        assertEquals("signed-token", response.getToken());
+        assertEquals("Bearer", response.getTokenType());
+        assertEquals(86400L, response.getExpiresInSeconds());
+        assertEquals("ACTIVE", response.getStatus());
+        assertEquals(user.getCreatedAt(), response.getCreatedAt());
         verify(passwordEncoder).matches("test-password", "encoded-password");
     }
 
@@ -47,6 +58,19 @@ class AuthServiceTest {
 
         assertThrows(InvalidCredentialsException.class,
                 () -> service.login(new AuthDto.LoginRequest("maya@example.com", "wrong-password")));
+    }
+
+    @Test
+    void loginNormalizesEmailBeforeLookingUpUser() {
+        User user = activeUser();
+        when(repository.findByEmailIgnoreCase("maya@example.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("test-password", "encoded-password")).thenReturn(true);
+        when(jwtUtil.generateToken(1L, "maya@example.com", "ADMIN", null)).thenReturn("signed-token");
+        when(jwtUtil.getExpirySeconds()).thenReturn(86400L);
+
+        service.login(new AuthDto.LoginRequest("Maya@Example.COM", "test-password"));
+
+        verify(repository).findByEmailIgnoreCase("maya@example.com");
     }
 
     @Test
