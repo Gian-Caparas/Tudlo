@@ -17,49 +17,67 @@ export const outcomes = [
   'LO5 · Evaluate algorithm efficiency',
 ]
 
-// Dashboard
-export const stats = {
-  classAverage: '76.4%',
-  passRate: '83%',
-  passDetail: '35 of 42',
-  completion: '96%',
-  completionDetail: '188 of 195',
-  needSupport: 4,
+// ---------- Teacher pages ----------
+
+export const classInfo = { code: 'CSIT321 – G6' }
+
+// Rules used by the Dashboard
+export const rules = {
+  passMark: 70,          // a student passes with an average of 70% or more
+  supportThreshold: 60,  // any score under 60% flags the student
 }
 
-export const performance = [
-  { name: 'Quiz 1', percent: 68 },
-  { name: 'Quiz 2', percent: 74 },
-  { name: 'Midterm', percent: 71 },
-  { name: 'Milestone 1', percent: 79 },
+// Settings used by Import Data
+export const importSettings = {
+  stepNames: ['Upload CSV', 'Validate', 'Done'],
+  expectedColumns: ['Student name', 'Assessment', 'Score', 'Max score'],
+  maxFileSize: '10 MB',
+}
+
+// Score records. score: null means the student has not submitted yet.
+function makeScores(student, [q1, q2, mid, m1]) {
+  return [
+    { student, assessment: 'Quiz 1', score: q1, maxScore: 20 },
+    { student, assessment: 'Quiz 2', score: q2, maxScore: 20 },
+    { student, assessment: 'Midterm', score: mid, maxScore: 50 },
+    { student, assessment: 'Milestone 1', score: m1, maxScore: 100 },
+  ]
+}
+
+export const seedScores = [
+  ...makeScores('Maria Santos', [12, 10, 33, 74]),
+  ...makeScores('Carlo Mendoza', [15, 14, 36, null]),
+  ...makeScores('Joshua Dela Cruz', [14, 15, 27, 70]),
+  ...makeScores('Andrei Castillo', [16, null, 38, 80]),
+  ...makeScores('Angelica Reyes', [15, 17, 37, 82]),
+  ...makeScores('Jasmine Garcia', [16, 17, 38, 85]),
+  ...makeScores('Miguel Bautista', [14, 16, 35, 78]),
+  ...makeScores('Sofia Ramos', [18, 18, 42, 90]),
+  ...makeScores('Paolo Navarro', [14, 14, 34, 76]),
+  ...makeScores('Elena Cruz', [17, 16, 40, 84]),
+  ...makeScores('Diego Torres', [15, 15, 36, 79]),
+  ...makeScores('Bianca Lim', [16, 18, 41, 88]),
 ]
 
-export const needsSupport = [
-  { name: 'Maria Santos', detail: 'Programming Basics · 48%', tag: 'Below Threshold' },
-  { name: 'Carlo Mendoza', detail: 'Project Milestone 1', tag: 'Overdue' },
-  { name: 'Joshua Dela Cruz', detail: 'Algorithms · 54%', tag: 'Below Threshold' },
-  { name: 'Andrei Castillo', detail: 'Quiz 2', tag: 'Overdue' },
+// Same list under the name your App imports.
+export const dashboardScores = seedScores
+
+// Fixed for now. Real topic averages need the Learning Gaps page.
+export const topicAverages = [
+  { name: 'UI Design', percent: 82 },
+  { name: 'Programming Basics', percent: 58 },
+  { name: 'Databases', percent: 71 },
+  { name: 'Web Development', percent: 76 },
+  { name: 'Algorithms', percent: 64 },
 ]
 
-// Import Data (step 2 table)
-export const importSummary = { total: 195, invalid: 7, fileName: 'scores_quiz2_csit321.csv' }
-
-export const validationRows = [
-  { student: 'Maria Santos', assessment: 'Quiz 2', score: '18', maxScore: '20', error: '' },
-  { student: 'Joshua Dela Cruz', assessment: 'Quiz 2', score: '0', maxScore: '20', error: '' },
-  { student: 'Carlo Mendoza', assessment: 'Quiz 2', score: '-', maxScore: '20', error: 'Missing Score' },
-  { student: 'Angelica Reyes', assessment: 'Quiz 2', score: '22', maxScore: '20', error: 'Score Exceeds Maximum' },
-  { student: 'Jasmine Garcia', assessment: 'Quiz 2', score: '17', maxScore: '20', error: '' },
-  { student: 'Miguel Bautista', assessment: 'Quiz 2', score: 'sixteen', maxScore: '20', error: 'Score Must Be A Number' },
-]
-
-// Topic Mapping (first two start mapped, the rest are empty)
+// Topic Mapping
 export const startingItems = [
   { name: 'Quiz 1 · Q1', hint: 'Identify visual hierarchy', topic: 'UI Design', outcome: 'LO1 · Apply design principles', maxScore: 5 },
   { name: 'Quiz 1 · Q2', hint: 'Write a conditional statement', topic: 'Programming Basics', outcome: 'LO2 · Use control structures', maxScore: 10 },
-  { name: 'Quiz 1 · Q3', hint: 'Normalize a data table', topic: '', outcome: '', maxScore: 10 },
-  { name: 'Quiz 2 · Q1', hint: 'Build a responsive layout', topic: '', outcome: '', maxScore: 15 },
-  { name: 'Midterm · Q4', hint: 'Analyze time complexity', topic: '', outcome: '', maxScore: 20 },
+  { name: 'Quiz 1 · Q3', hint: 'Normalize a data table', topic: 'Databases', outcome: 'LO3 · Design relational schemas', maxScore: 10 },
+  { name: 'Quiz 2 · Q1', hint: 'Build a responsive layout', topic: 'Web Development', outcome: 'LO4 · Create responsive interfaces', maxScore: 15 },
+  { name: 'Midterm · Q4', hint: 'Analyze time complexity', topic: 'Algorithms', outcome: 'LO5 · Evaluate algorithm efficiency', maxScore: 20 },
 ]
 
 // Student pages: My Progress
