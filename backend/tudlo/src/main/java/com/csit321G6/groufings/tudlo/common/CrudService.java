@@ -29,35 +29,68 @@ public abstract class CrudService<E, Req, Res> {
 
     @Transactional(readOnly = true)
     public List<Res> findAll() {
-        return repository().findAll().stream().map(this::toResponse).toList();
+        return filterForRead(repository().findAll()).stream().map(this::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public Res findById(Long id) {
-        return toResponse(getEntity(id));
+        E entity = getEntity(id);
+        beforeRead(entity);
+        return toResponse(entity);
     }
 
     @Transactional
     public Res create(Req request) {
         E entity = newEntity();
+        beforeCreate(entity, request);
         apply(entity, request);
-        return toResponse(repository().saveAndFlush(entity));
+        E saved = repository().saveAndFlush(entity);
+        afterCreate(saved, request);
+        return toResponse(saved);
     }
 
     @Transactional
     public Res update(Long id, Req request) {
         E entity = getEntity(id);
+        beforeUpdate(entity, request);
         apply(entity, request);
-        return toResponse(repository().saveAndFlush(entity));
+        E saved = repository().saveAndFlush(entity);
+        afterUpdate(saved, request);
+        return toResponse(saved);
     }
 
     @Transactional
     public void delete(Long id) {
-        if (!repository().existsById(id)) {
-            throw new ResourceNotFoundException(entityName(), id);
-        }
-        repository().deleteById(id);
+        E entity = getEntity(id);
+        beforeDelete(entity);
+        repository().delete(entity);
         repository().flush();
+        afterDelete(entity);
+    }
+
+    protected List<E> filterForRead(List<E> entities) {
+        return entities;
+    }
+
+    protected void beforeRead(E entity) {
+    }
+
+    protected void beforeCreate(E entity, Req request) {
+    }
+
+    protected void beforeUpdate(E existing, Req request) {
+    }
+
+    protected void beforeDelete(E existing) {
+    }
+
+    protected void afterCreate(E created, Req request) {
+    }
+
+    protected void afterUpdate(E updated, Req request) {
+    }
+
+    protected void afterDelete(E deleted) {
     }
 
     protected E getEntity(Long id) {

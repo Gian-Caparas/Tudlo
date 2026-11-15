@@ -8,6 +8,7 @@ import com.csit321G6.groufings.tudlo.entity.User;
 import com.csit321G6.groufings.tudlo.entity.UserType;
 import com.csit321G6.groufings.tudlo.repo.TeacherRepository;
 import com.csit321G6.groufings.tudlo.repo.UserRepository;
+import com.csit321G6.groufings.tudlo.security.RolePolicy;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
@@ -17,10 +18,12 @@ public class TeacherService extends CrudService<Teacher, TeacherDto.Request, Tea
 
     private final TeacherRepository repository;
     private final UserRepository userRepository;
+    private final RolePolicy rolePolicy;
 
-    public TeacherService(TeacherRepository repository, UserRepository userRepository) {
+    public TeacherService(TeacherRepository repository, UserRepository userRepository, RolePolicy rolePolicy) {
         this.repository = repository;
         this.userRepository = userRepository;
+        this.rolePolicy = rolePolicy;
     }
 
     @Override
@@ -36,6 +39,24 @@ public class TeacherService extends CrudService<Teacher, TeacherDto.Request, Tea
     @Override
     protected Teacher newEntity() {
         return new Teacher();
+    }
+
+    @Override
+    protected void beforeCreate(Teacher entity, TeacherDto.Request request) {
+        rolePolicy.assertCanManageProfile(rolePolicy.currentActor(),
+                find(userRepository, request.userId(), "User"));
+    }
+
+    @Override
+    protected void beforeUpdate(Teacher existing, TeacherDto.Request request) {
+        rolePolicy.assertCanManageProfile(rolePolicy.currentActor(), existing.getUser());
+        rolePolicy.assertCanManageProfile(rolePolicy.currentActor(),
+                find(userRepository, request.userId(), "User"));
+    }
+
+    @Override
+    protected void beforeDelete(Teacher existing) {
+        rolePolicy.assertCanManageProfile(rolePolicy.currentActor(), existing.getUser());
     }
 
     @Override
