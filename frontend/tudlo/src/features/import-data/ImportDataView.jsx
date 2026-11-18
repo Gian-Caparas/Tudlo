@@ -1,139 +1,41 @@
-import { useState, useRef } from 'react'
+import { useRef, useState } from 'react'
 import { PageHeader } from '@/components/shared/PageHeader.jsx'
 import { Icon } from '@/components/ui/Icon.jsx'
-import { importSettings } from '@/mockdata/mockData.js'
+import { academicService } from '@/services/academicService.js'
 
-const { stepNames, expectedColumns, maxFileSize } = importSettings
-
-// ---------- helpers ----------
-
-// Splits one CSV line into cells. Commas inside "quotes" are kept together.
-function splitLine(line) {
-  const cells = []
-  let current = ''
-  let inQuotes = false
-  for (const char of line) {
-    if (char === '"') inQuotes = !inQuotes
-    else if (char === ',' && !inQuotes) {
-      cells.push(current.trim())
-      current = ''
-    } else current += char
-  }
-  cells.push(current.trim())
-  return cells
-}
-
-// Turns the text of a CSV file into rows like { student, assessment, score, maxScore }.
-// Returns { rows } or { error }.
-function parseCsv(text) {
-  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter((line) => line.trim() !== '')
-  if (lines.length < 2) return { error: 'This file has no rows to import.' }
-
-  const headers = splitLine(lines[0]).map((h) => h.toLowerCase())
-  const student = headers.findIndex((h) => h === 'student name' || h === 'student')
-  const assessment = headers.indexOf('assessment')
-  const score = headers.indexOf('score')
-  const maxScore = headers.findIndex((h) => h === 'max score' || h === 'max_score' || h === 'maxscore')
-
-  if ([student, assessment, score, maxScore].includes(-1)) {
-    return { error: `Your CSV needs these columns: ${expectedColumns.join(', ')}.` }
-  }
-
-  const rows = lines.slice(1).map((line) => {
-    const cells = splitLine(line)
-    return {
-      student: cells[student] ?? '',
-      assessment: cells[assessment] ?? '',
-      score: cells[score] ?? '',
-      maxScore: cells[maxScore] ?? '',
-    }
-  })
-  return { rows }
-}
-
-// Turns a CSV row (text) into a score record (numbers).
-// A missing or non-number score is saved as null, meaning "not submitted".
-function toRecord(row) {
-  const score = Number(row.score)
-  const maxScore = Number(row.maxScore)
-  const hasScore = row.score !== '' && !Number.isNaN(score) && maxScore > 0
-  return {
-    student: row.student,
-    assessment: row.assessment,
-    score: hasScore ? score : null,
-    maxScore,
-  }
-}
-
-// ---------- small components ----------
-
-// Shows the 3 steps. Only needs to know which step we are on.
-function Stepper({ step }) {
-  return (
-    <div className="stepper">
-      {stepNames.map((name, i) => {
-        const number = i + 1
-        const state = number < step ? 'done' : number === step ? 'active' : ''
-        return (
-          <button key={name} className={state} tabIndex={-1}>
-            <i>{number < step ? <Icon name="check" size={13} /> : number}</i>
-            <span><small>STEP {number}</small>{name}</span>
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
-// ---------- the page ----------
-
-export function ImportDataView({ onImport, onNavigate }) {
-  const [step, setStep] = useState(1) // 1 = upload, 2 = review, 3 = done
-  const [rows, setRows] = useState([]) // rows read from the CSV
-  const [fileName, setFileName] = useState('')
+export function ImportDataView() {
+  const [step, setStep] = useState(1)
+  const [term, setTerm] = useState('Current')
+  const [file, setFile] = useState(null)
+  const [summary, setSummary] = useState(null)
   const [error, setError] = useState('')
-  const fileInput = useRef(null) // points to the hidden file picker
+  const fileInput = useRef(null)
 
-  // Reads the chosen file and moves on to step 2
-  async function readFile(file) {
-    if (!file) return
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      setError('Please choose a CSV file.')
+  function selectFile(selected) {
+    if (!selected) return
+    if (!selected.name.toLowerCase().endsWith('.xlsx')) {
+      setError('Please choose an Excel (.xlsx) classlist.')
       return
     }
-
-    const text = await file.text()
-    const result = parseCsv(text)
-
-    if (result.error) {
-      setError(result.error)
-      return
-    }
-
     setError('')
-    setRows(result.rows)
-    setFileName(file.name)
-    setStep(2)
+    setFile(selected)
   }
 
-  function handleFileChange(e) {
-    readFile(e.target.files[0])
-    e.target.value = '' // so choosing the same file again still works
+  async function handleImport() {
+    if (!file) return
+    setError('')
+    try {
+      const result = await academicService.importClasslist(file, term)
+      setSummary(result)
+      setStep(3)
+    } catch (requestError) {
+      setError(requestError.message)
+    }
   }
 
-  function handleDrop(e) {
-    e.preventDefault() // stop the browser from opening the file
-    readFile(e.dataTransfer.files[0])
-  }
-
-  function handleImport() {
-    onImport(rows.map(toRecord)) // sends every row up to App
-    setStep(3)
-  }
-
-  function handleReset() {
-    setRows([])
-    setFileName('')
+  function reset() {
+    setFile(null)
+    setSummary(null)
     setError('')
     setStep(1)
   }
@@ -142,100 +44,67 @@ export function ImportDataView({ onImport, onNavigate }) {
     <div>
       <PageHeader
         eyebrow="DATA WORKFLOW"
-        title="Import assessment data"
-        description="Bring scores into Tudlo before analysis."
+        title="Import classlist"
+        description="Upload the subject workbook before managing assessments and students."
       />
-
-      <Stepper step={step} />
 
       {step === 1 && (
         <section className="card upload-card">
           <div
             className="upload-zone"
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleDrop}
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={(event) => {
+              event.preventDefault()
+              selectFile(event.dataTransfer.files[0])
+            }}
           >
             <div><Icon name="upload" size={22} /></div>
-            <h2>Upload your score sheet</h2>
-            <p>Drag and drop a CSV file here, or choose one from your computer.</p>
-
+            <h2>Upload your .xlsx classlist</h2>
+            <p>Use the subject name as the filename and section names as worksheet names.</p>
             <input
               ref={fileInput}
               type="file"
-              accept=".csv"
-              onChange={handleFileChange}
+              accept=".xlsx"
               hidden
+              onChange={(event) => selectFile(event.target.files[0])}
             />
-            <button className="btn secondary" onClick={() => fileInput.current.click()}>
-              Choose CSV file
+            <button className="btn secondary" type="button" onClick={() => fileInput.current.click()}>
+              Choose Excel file
             </button>
-
-            <small>CSV only · Maximum {maxFileSize}</small>
+            <label>
+              Term
+              <input value={term} onChange={(event) => setTerm(event.target.value)} />
+            </label>
+            {file && <strong>{file.name}</strong>}
             {error && <small style={{ color: '#b42318' }}>{error}</small>}
-          </div>
-          <div className="file-hint">
-            <strong>Expected columns</strong>
-            {expectedColumns.map((column) => (
-              <span key={column}>{column}</span>
-            ))}
+            {file && (
+              <button className="btn primary" type="button" onClick={handleImport}>
+                Import classlist
+              </button>
+            )}
           </div>
         </section>
       )}
 
-      {step === 2 && (
-        <>
-          <div className="summary-banner">
-            <Icon name="alert" size={16} />
-            <div>
-              <strong>{rows.length} rows found in {fileName}.</strong>
-              <span>Check the rows below, then import them.</span>
-            </div>
-            <button className="btn primary" onClick={handleImport}>Import rows</button>
-          </div>
-
-          <section className="card">
-            <div className="section-head">
-              <div>
-                <h2>Rows to import</h2>
-                <p>{fileName} · {rows.length} rows</p>
-              </div>
-            </div>
-            <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Student</th>
-                    <th>Assessment</th>
-                    <th>Score</th>
-                    <th>Max score</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row, i) => (
-                    <tr key={i} className="valid-row">
-                      <td>{row.student}</td>
-                      <td>{row.assessment}</td>
-                      <td><strong>{row.score === '' ? '—' : row.score}</strong></td>
-                      <td>{row.maxScore}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        </>
-      )}
-
-      {step === 3 && (
-        <section className="card done-card">
-          <div className="done-check"><Icon name="check" size={28} /></div>
-          <p className="eyebrow">IMPORT COMPLETE</p>
-          <h2>{rows.length} score rows are ready</h2>
-          <p>Your class analytics and learning gaps have been updated.</p>
-          <div>
-            <button className="btn ghost" onClick={handleReset}>Import another file</button>
-            <button className="btn primary" onClick={() => onNavigate('Learning Gaps')}>View learning gaps</button>
-          </div>
+      {step === 3 && summary && (
+        <section className="card upload-card">
+          <h2>Import complete</h2>
+          <p>{summary.subject} · {summary.term}</p>
+          <p>
+            {summary.studentsCreated} students created · {summary.studentsReused} reused ·
+            {' '}{summary.enrollmentsCreated} enrollments created · {summary.enrollmentsReused} reused
+          </p>
+          {summary.rejectedRows?.length > 0 && (
+            <ul>
+              {summary.rejectedRows.map((row, index) => (
+                <li key={`${row.section}-${row.rowNumber}-${index}`}>
+                  {row.section}, row {row.rowNumber}: {row.reason}
+                </li>
+              ))}
+            </ul>
+          )}
+          {error && <small style={{ color: '#b42318' }}>{error}</small>}
+          <button className="btn secondary" type="button" onClick={reset}>Import another file</button>
         </section>
       )}
     </div>

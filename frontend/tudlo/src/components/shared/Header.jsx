@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/Badge.jsx";
 import { Icon } from "@/components/ui/Icon.jsx";
 export function Header({ role, page, userName, onLogout }) {
   const roleLabel = {
-    developer: "Developer",
     admin: "Admin",
     teacher: "Teacher",
     student: "Student",
@@ -17,9 +16,7 @@ export function Header({ role, page, userName, onLogout }) {
             ? "CSIT321 – G6"
             : role === "student"
               ? "My learning"
-              : role === "developer"
-                ? "Tudlo Developer"
-                : "Tudlo Admin"}
+              : "Tudlo Admin"}
         </span>
         <Icon name="chevron" size={13} />
         <b>{page}</b>

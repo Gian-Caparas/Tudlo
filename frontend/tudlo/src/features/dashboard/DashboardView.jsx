@@ -3,7 +3,6 @@ import { Badge } from '@/components/ui/Badge.jsx'
 import { Avatar } from '@/components/ui/Avatar.jsx'
 import { Icon } from '@/components/ui/Icon.jsx'
 import { LineChart } from '@/components/ui/LineChart.jsx'
-import { classInfo, rules, topicAverages } from '@/mockdata/mockData.js'
 
 // ---------- helpers: everything on the page is calculated from the scores ----------
 

@@ -10,7 +10,7 @@ export function Sidebar({ role, page, onNavigate }) {
         <span>
           {role === "teacher" ? "TEACHING" : role === "student" ? "LEARNING" : "WORKSPACE"}
         </span>
-        <strong>{role === "admin" ? "Administration" : role === "developer" ? "Developer tools" : "CSIT321 – G6"}</strong>
+        <strong>{role === "admin" ? "Administration" : "CSIT321 – G6"}</strong>
         {role === "teacher" && <small>42 students</small>}
       </div>
       <nav>

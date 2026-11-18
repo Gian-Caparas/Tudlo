@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useAuth } from '@/hooks/useAuth.js'
 import { navigationByRole } from '@/routes'
 import { homePage } from '@/utils/permissions.js'
-import { dashboardScores, startingItems } from '@/mockdata/mockData.js'
 import { MainLayout } from '@/layout/MainLayout.jsx'
 import { LoginPage } from '@/pages/Login.jsx'
 import { AccessRestrictedPage } from '@/pages/AccessRestrictedPage.jsx'
@@ -21,7 +20,7 @@ import MySubmissionsPage from '@/pages/student/MySubmissionsPage.jsx'
 function renderPage(page, onNavigate, userName, savedItems, onSaveMapping) {
   switch (page) {
     case 'Dashboard':
-      return <DashboardPage scores={dashboardScores} userName={userName} onNavigate={onNavigate} />
+      return <DashboardPage scores={[]} userName={userName} onNavigate={onNavigate} />
     case 'Import Data':
       return <ImportDataPage />
     case 'Topic Mapping':
@@ -50,7 +49,7 @@ function renderPage(page, onNavigate, userName, savedItems, onSaveMapping) {
 function App() {
   const { role, user, authLoading, sessionError, login, logout, retrySessionValidation } = useAuth()
   const [page, setPage] = useState(null)
-  const [mappingItems, setMappingItems] = useState(startingItems)
+  const [mappingItems, setMappingItems] = useState([])
 
   function handleLogout() {
     setPage(null)

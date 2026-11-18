@@ -10,7 +10,6 @@ import { AddUsers } from './AddUsers.jsx'
 
 const roleLabels = {
   ADMIN: 'Admin',
-  DEVELOPER: 'Developer',
   TEACHER: 'Teacher',
   STUDENT: 'Student',
 }

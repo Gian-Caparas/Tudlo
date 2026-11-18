@@ -1,8 +1,4 @@
 export const navigationByRole = {
-  developer: [
-    { label: "Users", icon: "users" },
-    { label: "System Maintenance", icon: "settings" },
-  ],
   admin: [
     { label: "Users", icon: "users" },
     { label: "System Maintenance", icon: "settings" },

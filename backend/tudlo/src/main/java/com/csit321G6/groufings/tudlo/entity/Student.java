@@ -4,11 +4,12 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity 
-@Table (name = "student")
+@Entity
+@Table(name = "student")
 @Getter
 @Setter
 public class Student {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "student_id")
@@ -17,7 +18,4 @@ public class Student {
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
-
-    @Column(name = "student_no", nullable = false, length = 30)
-    private String studentNo;
 }

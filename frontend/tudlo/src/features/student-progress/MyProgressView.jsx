@@ -1,36 +1,55 @@
+import { useEffect, useState } from 'react'
 import { PageHeader } from '@/components/shared/PageHeader.jsx'
 import { Badge } from '@/components/ui/Badge.jsx'
 import { LineChart } from '@/components/ui/LineChart.jsx'
 import { TopicBars } from '@/components/ui/TopicBars.jsx'
-import { studentProgress } from '@/mockdata/mockData.js'
 import { Icon } from '@/components/ui/Icon.jsx'
+import { academicService } from '@/services/academicService.js'
 
 export function MyProgressView({ onNavigate }) {
-  const data = studentProgress
+  const [data, setData] = useState(null)
+  const [error, setError] = useState('')
 
-  // Find the highest and lowest topic scores
-  const strongest = data.topicScores.reduce((a, b) => (b.percent > a.percent ? b : a))
-  const weakest = data.topicScores.reduce((a, b) => (b.percent < a.percent ? b : a))
+  useEffect(() => {
+    let active = true
+    academicService.getOwnProgress()
+      .then((progress) => active && setData(progress))
+      .catch((requestError) => active && setError(requestError.message))
+    return () => { active = false }
+  }, [])
+
+  if (error) return <div className="card"><p>{error}</p></div>
+  if (!data) return <div className="card" role="status"><p>Loading your progress…</p></div>
+
+  const subjectScores = data.subjects
+    .map((subject) => ({ name: subject.subjectName, percent: subject.observedPercentage }))
+    .filter((subject) => subject.percent !== null)
+  const strongest = subjectScores.reduce(
+    (best, subject) => subject.percent > best.percent ? subject : best,
+    subjectScores[0])
+  const weakest = subjectScores.reduce(
+    (lowest, subject) => subject.percent < lowest.percent ? subject : lowest,
+    subjectScores[0])
+  const overall = data.overallObservedPercentage
 
   return (
     <div>
       <PageHeader
         eyebrow="MY LEARNING"
-        title={`Your progress, ${data.firstName}`}
+        title="Your progress"
         description="See what's going well and where a little more practice can help."
       />
 
       <section className="student-hero">
         <div>
           <span>OVERALL AVERAGE</span>
-          <strong>{data.overallAverage}%</strong>
-          <p>Across {data.assessmentCount} assessments</p>
-          <Badge tone="success">↑ {data.pointsSinceLastQuiz} points since Quiz 2</Badge>
+          <strong>{overall === null ? '—' : `${overall}%`}</strong>
+          <p>Across {data.assessmentCount} graded assessments</p>
         </div>
         <div className="hero-message">
           <span>YOUR LATEST WIN</span>
-          <h2>{data.latestWin.title}</h2>
-          <p>{data.latestWin.detail}</p>
+          <h2>{strongest?.name ?? 'No recorded result yet'}</h2>
+          <p>{strongest ? `${strongest.percent}% observed performance` : 'Complete graded assessments to start tracking progress.'}</p>
         </div>
       </section>
 
@@ -42,10 +61,12 @@ export function MyProgressView({ onNavigate }) {
               <p>Your performance across assessments</p>
             </div>
           </div>
-          <LineChart
-            values={data.scoresOverTime.map((s) => s.percent)}
-            labels={data.scoresOverTime.map((s) => s.name)}
-          />
+          {subjectScores.length ? (
+            <LineChart
+              values={subjectScores.map((subject) => subject.percent)}
+              labels={subjectScores.map((subject) => subject.name)}
+            />
+          ) : <p>No graded assessments yet.</p>}
         </section>
 
         <section className="card chart-card">
@@ -55,13 +76,15 @@ export function MyProgressView({ onNavigate }) {
               <p>Your current topic mastery</p>
             </div>
           </div>
-          <TopicBars
-            values={data.topicScores.map((t) => t.percent)}
-            labels={data.topicScores.map((t) => t.name)}
-          />
+          {subjectScores.length ? (
+            <TopicBars
+              values={subjectScores.map((subject) => subject.percent)}
+              labels={subjectScores.map((subject) => subject.name)}
+            />
+          ) : <p>No subject performance is available yet.</p>}
           <div className="strength-labels">
-            <span><i className="strong-dot" />Strongest: <b>{strongest.name}</b></span>
-            <span><i className="weak-dot" />Focus area: <b>{weakest.name}</b></span>
+            {strongest && <span><i className="strong-dot" />Strongest: <b>{strongest.name}</b></span>}
+            {weakest && <span><i className="weak-dot" />Focus area: <b>{weakest.name}</b></span>}
           </div>
         </section>
       </div>
@@ -69,8 +92,8 @@ export function MyProgressView({ onNavigate }) {
             <section className="student-tip">
         <Icon name="book" />
         <div>
-          <strong>{data.nextStep.title}</strong>
-          <p>{data.nextStep.detail}</p>
+          <strong>{weakest ? 'A good next step' : 'Progress is getting started'}</strong>
+          <p>{weakest ? `Review ${weakest.name}; it currently has the lowest observed performance.` : 'There are no graded results to prioritize yet.'}</p>
         </div>
         <button onClick={() => onNavigate('Topics to Review')}>Review topics →</button>
       </section>

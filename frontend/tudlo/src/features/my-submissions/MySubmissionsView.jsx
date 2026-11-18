@@ -1,22 +1,33 @@
+import { useEffect, useState } from 'react'
 import { PageHeader } from '@/components/shared/PageHeader.jsx'
 import { Badge } from '@/components/ui/Badge.jsx'
-import { mySubmissions } from '@/mockdata/mockData.js'
+import { academicService } from '@/services/academicService.js'
 
 export function MySubmissionsView() {
-  const { description, rows } = mySubmissions
+  const [rows, setRows] = useState([])
+  const [error, setError] = useState('')
 
-  const submitted = rows.filter((r) => r.score !== null).length
-  const onTime = rows.filter((r) => r.status === 'On Time').length
-  const needsAttention = rows.filter(
-    (r) => r.status === 'Overdue' || r.status === 'Missing'
-  ).length
+  useEffect(() => {
+    let active = true
+    academicService.getOwnSubmissions()
+      .then((submissions) => active && setRows(submissions))
+      .catch((requestError) => active && setError(requestError.message))
+    return () => { active = false }
+  }, [])
+
+  if (error) return <div className="card"><p>{error}</p></div>
+
+  const submitted = rows.filter((row) => row.observedPercentage !== null).length
+  const onTime = rows.filter((row) => row.status === 'SUBMITTED').length
+  const needsAttention = rows.filter((row) =>
+    row.status === 'MISSING' || row.status === 'NOT_REQUIRED').length
 
   return (
     <div>
       <PageHeader
         eyebrow="MY LEARNING"
         title="My Submissions"
-        description={description}
+        description="Track your assessment scores and submission status."
       />
 
       <section className="submission-summary">
@@ -46,14 +57,21 @@ export function MySubmissionsView() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => (
-                <tr key={r.name}>
-                  <td><strong>{r.name}</strong></td>
-                  <td className="muted">{r.due}</td>
-                  <td><strong>{r.score !== null ? `${r.score}%` : '—'}</strong></td>
-                  <td><Badge tone={r.tone}>{r.status}</Badge></td>
-                </tr>
-              ))}
+              {rows.map((row) => {
+                const tone = row.status === 'MISSING'
+                  ? 'danger'
+                  : row.status === 'LATE'
+                    ? 'warning'
+                    : 'success'
+                return (
+                  <tr key={row.submissionId}>
+                    <td><strong>{row.assessmentName}</strong></td>
+                    <td className="muted">{row.dueDate ?? '—'}</td>
+                    <td><strong>{row.observedPercentage !== null ? `${row.observedPercentage}%` : '—'}</strong></td>
+                    <td><Badge tone={tone}>{row.status}</Badge></td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
@@ -61,4 +79,3 @@ export function MySubmissionsView() {
     </div>
   )
 }
-
