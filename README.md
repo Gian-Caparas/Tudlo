@@ -158,9 +158,10 @@ On an empty database, the backend seeds these local demo accounts:
 
 | Role | User ID number | Password |
 |---|---|---|
-| Admin | `2026-9999` | `admin123` |
-| Teacher | `2026-1001` | `admin123` |
-| Student | `2026-0001` | `pass1234` |
+| Teacher | `2026-0001` | `admin123` |
+| Teacher | `2026-0002` | `admin123` |
+| Student | `2026-0003` | `pass1234` |
+| Admin | `2026-0008` | `admin123` |
 
 The demo accounts are not added when the database already contains unrelated users. Existing local databases with demo users created by an older version have their original plaintext demo passwords upgraded to BCrypt on startup. Change demo credentials before using the database outside local development.
 
@@ -273,6 +274,8 @@ All endpoints are prefixed with `/api`. Swagger/OpenAPI is not configured in the
 
 Login accepts `{"userIdNumber":"...","password":"..."}`. The response contains a `Bearer` token, `expiresInMs`, and the user's ID, user ID number, full name, and type. Send protected requests with `Authorization: Bearer <token>`. Invalid login credentials return `401`.
 
+The admin Users page lists each user's first name, last name, user ID number, and type. Admins can add teachers or students with `POST /api/users` using `{"firstName":"...","lastName":"...","password":"...","userType":"TEACHER"}` (or `"STUDENT"`). The backend assigns the next ID in sequence starting from `2026-0001` and hashes the password; with the current demo seed, the next ID is `2026-0009`.
+
 ## Git Workflow
 
 - **Branches:** `main` (stable), `development` (integration), `feature/<module>-<name>` (work)
@@ -304,7 +307,7 @@ npm run build
 1. Start MariaDB and create the `tudlo` database.
 2. In one terminal, set `APP_JWT_SECRET` and start the backend with `.\mvnw.cmd spring-boot:run` from `backend\tudlo`.
 3. In a second terminal, run `npm run dev` from `frontend\tudlo`.
-4. Open http://localhost:5173 and sign in with user ID `2026-9999` / password `admin123`.
+4. Open http://localhost:5173 and sign in with user ID `2026-0008` / password `admin123`.
 5. In browser DevTools Network, confirm `POST http://localhost:8080/api/auth/login` and the subsequent authenticated `GET http://localhost:8080/api/auth/me` both return `200`. Refresh the page to confirm the session is restored, then log out and confirm the login page returns.
 6. Try an incorrect password and confirm login is rejected with a generic error.
 
@@ -314,7 +317,7 @@ To check the API directly from PowerShell, while the backend is running:
 $login = Invoke-RestMethod -Method Post `
   -Uri 'http://localhost:8080/api/auth/login' `
   -ContentType 'application/json' `
-  -Body (@{ userIdNumber = '2026-9999'; password = 'admin123' } | ConvertTo-Json)
+  -Body (@{ userIdNumber = '2026-0008'; password = 'admin123' } | ConvertTo-Json)
 
 Invoke-RestMethod -Uri 'http://localhost:8080/api/auth/me' `
   -Headers @{ Authorization = "Bearer $($login.token)" }
