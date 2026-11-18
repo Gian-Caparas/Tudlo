@@ -3,29 +3,25 @@ package com.csit321G6.groufings.tudlo.service;
 import com.csit321G6.groufings.tudlo.common.CrudService;
 import com.csit321G6.groufings.tudlo.dto.AssessmentDto;
 import com.csit321G6.groufings.tudlo.entity.Assessment;
-import com.csit321G6.groufings.tudlo.entity.ClassRoom;
-import com.csit321G6.groufings.tudlo.repo.AssessmentRepository;
-import com.csit321G6.groufings.tudlo.repo.ClassRoomRepository;
-
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.csit321G6.groufings.tudlo.repository.AssessmentRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class AssessmentService extends CrudService<Assessment, AssessmentDto.Request, AssessmentDto.Response> {
 
-    private final AssessmentRepository repository;
-    private final ClassRoomRepository classRoomRepository;
+    private final AssessmentRepository assessmentRepository;
 
-    public AssessmentService(
-            AssessmentRepository repository,
-            ClassRoomRepository classRoomRepository) {
-        this.repository = repository;
-        this.classRoomRepository = classRoomRepository;
+    public AssessmentService(AssessmentRepository assessmentRepository) {
+        this.assessmentRepository = assessmentRepository;
     }
 
     @Override
-    protected JpaRepository<Assessment, Long> repository() {
-        return repository;
+    protected AssessmentRepository repository() {
+        return assessmentRepository;
     }
 
     @Override
@@ -40,20 +36,30 @@ public class AssessmentService extends CrudService<Assessment, AssessmentDto.Req
 
     @Override
     protected void apply(Assessment entity, AssessmentDto.Request request) {
-        entity.setClassRoom(find(classRoomRepository, request.classId(), "Class"));
-        entity.setTitle(request.title());
-        entity.setType(request.type());
-        entity.setDueDate(request.dueDate());
+        entity.setLearningOutcome(request.learningOutcome());
+        entity.setMaxScore(request.maxScore());
+        entity.setAssessmentItem(request.assessmentItem());
+        entity.setSubjectName(request.subjectName());
+        entity.setClassSection(request.classSection());
     }
 
     @Override
     protected AssessmentDto.Response toResponse(Assessment entity) {
-        ClassRoom classRoom = entity.getClassRoom();
         return new AssessmentDto.Response(
-                entity.getId(),
-                classRoom.getId(),
-                entity.getTitle(),
-                entity.getType(),
-                entity.getDueDate());
+            entity.getId(),
+            entity.getLearningOutcome(),
+            entity.getMaxScore(),
+            entity.getAssessmentItem(),
+            entity.getSubjectName(),
+            entity.getClassSection(),
+            null // createdAt not in entity
+        );
+    }
+
+    public List<AssessmentDto.Response> getBySubjectAndSection(String subjectName, String classSection) {
+        return assessmentRepository.findBySubjectNameAndClassSection(subjectName, classSection)
+            .stream()
+            .map(this::toResponse)
+            .collect(Collectors.toList());
     }
 }
