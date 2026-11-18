@@ -5,6 +5,7 @@ import com.csit321G6.groufings.tudlo.dto.UserDto;
 import com.csit321G6.groufings.tudlo.entity.*;
 import com.csit321G6.groufings.tudlo.repository.*;
 import jakarta.transaction.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 
@@ -15,15 +16,18 @@ public class UserService extends CrudService<User, UserDto.Request, UserDto.Resp
     private final TeacherRepository teacherRepository;
     private final StudentRepository studentRepository;
     private final AdminRepository adminRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository,
                        TeacherRepository teacherRepository,
                        StudentRepository studentRepository,
-                       AdminRepository adminRepository) {
+                       AdminRepository adminRepository,
+                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.teacherRepository = teacherRepository;
         this.studentRepository = studentRepository;
         this.adminRepository = adminRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // --- CrudService abstract methods ---
@@ -69,8 +73,8 @@ public class UserService extends CrudService<User, UserDto.Request, UserDto.Resp
 
     @Override
     protected void beforeCreate(User entity, UserDto.Request request) {
-        // Set default password for new users (should be hashed in production)
-        entity.setPassword("password123");
+        // Set default password for new users (hashed)
+        entity.setPassword(passwordEncoder.encode("password123"));
     }
 
     @Override

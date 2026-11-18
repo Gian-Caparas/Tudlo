@@ -18,17 +18,16 @@ function readSession() {
 
 function createSession(loginResponse) {
   const user = {
-    id: loginResponse.id ?? loginResponse.userId,
+    id: loginResponse.id,
     fullName: loginResponse.fullName,
-    email: loginResponse.email,
+    userIdNumber: loginResponse.userIdNumber,
     userType: loginResponse.userType,
-    status: loginResponse.status,
-    createdAt: loginResponse.createdAt,
+    createdAt: loginResponse.createdAt ?? new Date().toISOString(),
   }
   return {
     token: loginResponse.token,
     tokenType: loginResponse.tokenType ?? 'Bearer',
-    expiresInSeconds: loginResponse.expiresInSeconds,
+    expiresInMs: loginResponse.expiresInMs ?? loginResponse.expiresInSeconds ?? 86400000,
     profileId: loginResponse.profileId ?? null,
     role: user.userType.toLowerCase(),
     user,
@@ -91,14 +90,18 @@ export function AuthProvider({ children }) {
     authService.getCurrentUser(session.token, { signal: controller.signal })
       .then((currentUser) => {
         if (!active) return
+        const fullName = `${currentUser.firstName} ${currentUser.lastName}`.trim()
         const nextSession = {
           ...session,
           role: currentUser.userType.toLowerCase(),
           profileId: currentUser.profileId ?? null,
           user: {
             ...session.user,
-            ...currentUser,
-            fullName: currentUser.fullName,
+            id: currentUser.id,
+            fullName,
+            userIdNumber: currentUser.userIdNumber,
+            userType: currentUser.userType,
+            createdAt: currentUser.createdAt,
           },
         }
         localStorage.setItem(SESSION_KEY, JSON.stringify(nextSession))

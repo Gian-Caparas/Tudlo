@@ -84,7 +84,6 @@ Tudlo/
 │        ├─ main/resources/
 │        │  ├─ application.properties
 │        │  ├─ application-local.properties.example
-│        │  └─ db/seed.sql
 │        └─ test/java/com/csit321G6/groufings/tudlo/
 │           └─ TudloApplicationTests.java
 └─ frontend/
@@ -129,12 +128,12 @@ cd Tudlo
 
 ### 2. Set up the database
 
-Start the MySQL module in XAMPP, then create a database named `tudlo` in phpMyAdmin.
-For local development, Hibernate creates or updates the tables when the backend starts. On a fresh database, start the backend once to create the schema before loading the demo rows.
+Start the MariaDB module in XAMPP, then create a database named `tudlo` in phpMyAdmin.
+For local development, Hibernate creates or updates the tables and `DataSeeder` adds demo rows when the backend starts with an empty database.
 
 ### 3. Configure and run the backend
 
-Set a local JWT secret of at least 32 bytes and the first Developer credentials in the current PowerShell session:
+Set a local JWT secret of at least 32 bytes in the current PowerShell session:
 
 ```powershell
 $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
@@ -142,8 +141,6 @@ $bytes = New-Object byte[] 48
 $rng.GetBytes($bytes)
 $env:APP_JWT_SECRET = [Convert]::ToBase64String($bytes)
 $rng.Dispose()
-$env:APP_BOOTSTRAP_DEVELOPER_EMAIL = 'developer@tudlo.test'
-$env:APP_BOOTSTRAP_DEVELOPER_PASSWORD = 'replace-with-a-local-password'
 ```
 
 Then start the API:
@@ -155,16 +152,17 @@ cd backend\tudlo
 
 - API: http://localhost:8080
 
-On startup, Tudlo creates one active Developer only when both bootstrap variables are set and no Developer exists. Its password is BCrypt-hashed. The seed does not create a Developer. Never commit your real environment values or local properties.
+Never commit your real environment values or local properties.
 
-On a fresh database, stop the backend after its first successful startup, then load the demo users and profile rows (re-running is safe):
+On an empty database, the backend seeds these local demo accounts:
 
-```powershell
-cd backend\tudlo
-Get-Content -Raw .\src\main\resources\db\seed.sql | mariadb --user=root tudlo
-```
+| Role | User ID number | Password |
+|---|---|---|
+| Admin | `2026-9999` | `admin123` |
+| Teacher | `2026-1001` | `admin123` |
+| Student | `2026-0001` | `pass1234` |
 
-The seed creates `admin@tudlo.test`, `teacher@tudlo.test`, and `student1@tudlo.test`, each with password `ChangeMe123!`. Change these demo credentials before using the database outside local development. Restart the backend after loading the seed.
+The demo accounts are not added when the database already contains unrelated users. Existing local databases with demo users created by an older version have their original plaintext demo passwords upgraded to BCrypt on startup. Change demo credentials before using the database outside local development.
 
 The checked-in [application-local.properties.example](backend/tudlo/src/main/resources/application-local.properties.example) documents local-only settings. To use it, copy it to `application-local.properties` in the same resources folder, set the referenced environment variables, and activate the `local` profile (for example, set `$env:SPRING_PROFILES_ACTIVE = 'local'` before launching). The real file is ignored by Git.
 
@@ -188,12 +186,10 @@ spring.datasource.url=jdbc:mariadb://localhost:3306/tudlo
 spring.datasource.username=${DB_USERNAME:root}
 spring.datasource.password=${DB_PASSWORD:}
 app.jwt.secret=${APP_JWT_SECRET:}
-app.jwt.expiration-minutes=${APP_JWT_EXPIRATION_MINUTES:480}
-app.bootstrap.developer-email=${APP_BOOTSTRAP_DEVELOPER_EMAIL:}
-app.bootstrap.developer-password=${APP_BOOTSTRAP_DEVELOPER_PASSWORD:}
+app.jwt.expiration-ms=${APP_JWT_EXPIRATION_MS:86400000}
 ```
 
-The backend refuses to start without `APP_JWT_SECRET` containing at least 32 bytes. `APP_BOOTSTRAP_DEVELOPER_EMAIL` and `APP_BOOTSTRAP_DEVELOPER_PASSWORD` must both be set to create the first Developer. MariaDB credentials can be supplied through `DB_USERNAME` and `DB_PASSWORD`.
+Set `APP_JWT_SECRET` to at least 32 bytes. MariaDB credentials can be supplied through `DB_USERNAME` and `DB_PASSWORD`.
 
 ### Frontend
 
@@ -275,7 +271,7 @@ All endpoints are prefixed with `/api`. Swagger/OpenAPI is not configured in the
 | System maintenance | `/system-maintenance` |
 | Academic resources | `/classes`, `/enrollments`, `/topics`, `/learning-outcomes`, `/assessments`, `/assessment-items`, `/submissions`, `/item-scores`, `/support-activities` |
 
-Login accepts `{"email":"...","password":"..."}` (the legacy `username` alias is also accepted). The response contains a `Bearer` token, `expiresInSeconds`, user identity and role, status, creation time, and `profileId`. Send protected requests with `Authorization: Bearer <token>`. Invalid login credentials all return `401` with the same generic message.
+Login accepts `{"userIdNumber":"...","password":"..."}`. The response contains a `Bearer` token, `expiresInMs`, and the user's ID, user ID number, full name, and type. Send protected requests with `Authorization: Bearer <token>`. Invalid login credentials return `401`.
 
 ## Git Workflow
 
@@ -301,16 +297,16 @@ npm run build
 
 - Backend tests use JUnit 5, Mockito, and H2. The H2 URL enables `NON_KEYWORDS=USER`, so the existing `user` table name is retained.
 - No frontend test script or component-test framework is currently defined in `package.json`; lint and production build are the configured frontend checks.
-- `db/seed.sql` includes only the demo Administrator, Teacher, and Student account/profile rows.
+- `DataSeeder` creates the demo users and profile rows on an empty database.
 
 ### Manual full-stack login check
 
-1. Start MariaDB, create the `tudlo` database, and initialize its tables/load `db/seed.sql` as described above.
+1. Start MariaDB and create the `tudlo` database.
 2. In one terminal, set `APP_JWT_SECRET` and start the backend with `.\mvnw.cmd spring-boot:run` from `backend\tudlo`.
 3. In a second terminal, run `npm run dev` from `frontend\tudlo`.
-4. Open http://localhost:5173 and sign in with `admin@tudlo.test` / `ChangeMe123!`.
+4. Open http://localhost:5173 and sign in with user ID `2026-9999` / password `admin123`.
 5. In browser DevTools Network, confirm `POST http://localhost:8080/api/auth/login` and the subsequent authenticated `GET http://localhost:8080/api/auth/me` both return `200`. Refresh the page to confirm the session is restored, then log out and confirm the login page returns.
-6. Try an incorrect password and confirm login is rejected with a generic error. The seeded Teacher and Student credentials use the same local-only demo password.
+6. Try an incorrect password and confirm login is rejected with a generic error.
 
 To check the API directly from PowerShell, while the backend is running:
 
@@ -318,7 +314,7 @@ To check the API directly from PowerShell, while the backend is running:
 $login = Invoke-RestMethod -Method Post `
   -Uri 'http://localhost:8080/api/auth/login' `
   -ContentType 'application/json' `
-  -Body (@{ email = 'admin@tudlo.test'; password = 'ChangeMe123!' } | ConvertTo-Json)
+  -Body (@{ userIdNumber = '2026-9999'; password = 'admin123' } | ConvertTo-Json)
 
 Invoke-RestMethod -Uri 'http://localhost:8080/api/auth/me' `
   -Headers @{ Authorization = "Bearer $($login.token)" }

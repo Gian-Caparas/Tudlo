@@ -1,4 +1,4 @@
-import { LoginView } from "@/features/auth/LoginView.jsx";
+import { LoginView } from "@/features/auth/LoginAuthentication.jsx";
 export function LoginPage(props) {
   return <LoginView {...props} />;
 }
