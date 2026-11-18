@@ -1,12 +1,13 @@
 package com.csit321G6.groufings.tudlo.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "assessment")
+@Table(name = "assessment", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"assessment_item", "subject_name", "class_section"})
+})
 @Getter
 @Setter
 public class Assessment {
@@ -16,16 +17,26 @@ public class Assessment {
     @Column(name = "assessment_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "class_id", nullable = false)
-    private ClassRoom classRoom;
+    @Column(name = "learning_outcome", nullable = false, length = 500)
+    private String learningOutcome;
 
-    @Column(name = "title", nullable = false, length = 150)
-    private String title;
+    @Column(name = "max_score", nullable = false)
+    private Double maxScore;
 
-    @Column(name = "type", length = 50)
-    private String type;
+    @Column(name = "assessment_item", nullable = false, length = 200)
+    private String assessmentItem;
 
-    @Column(name = "due_date")
-    private LocalDate dueDate;
+    @Column(name = "subject_name", nullable = false, length = 150)
+    private String subjectName;
+
+    @Column(name = "class_section", nullable = false, length = 50)
+    private String classSection;
+
+    // Optional: link to Subject for referential integrity
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumns({
+        @JoinColumn(name = "subject_name", referencedColumnName = "subject_name", insertable = false, updatable = false),
+        @JoinColumn(name = "class_section", referencedColumnName = "class_section", insertable = false, updatable = false)
+    })
+    private Subject subject;
 }
