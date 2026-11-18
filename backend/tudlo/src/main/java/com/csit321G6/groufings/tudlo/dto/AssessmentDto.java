@@ -1,9 +1,7 @@
 package com.csit321G6.groufings.tudlo.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import java.time.LocalDate;
+import jakarta.validation.constraints.*;
+import java.time.LocalDateTime;
 
 public final class AssessmentDto {
 
@@ -11,19 +9,28 @@ public final class AssessmentDto {
     }
 
     public record Request(
-            @NotNull Long classId,
-            @NotBlank @Size(max = 150) String title,
-            @Size(max = 50) String type,
-            LocalDate dueDate
+            @NotBlank(message = "Learning outcome is required")
+            String learningOutcome,
+            @NotNull(message = "Max score is required")
+            @DecimalMin(value = "0.01", message = "Max score must be positive")
+            Double maxScore,
+            @NotBlank(message = "Assessment item is required")
+            String assessmentItem,
+            @NotBlank(message = "Subject name is required")
+            String subjectName,
+            @NotBlank(message = "Class section is required")
+            String classSection
     ) {
     }
 
     public record Response(
             Long id,
-            Long classId,
-            String title,
-            String type,
-            LocalDate dueDate
+            String learningOutcome,
+            Double maxScore,
+            String assessmentItem,
+            String subjectName,
+            String classSection,
+            LocalDateTime createdAt
     ) {
     }
 }
