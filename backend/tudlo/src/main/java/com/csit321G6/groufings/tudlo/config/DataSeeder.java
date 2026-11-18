@@ -28,7 +28,12 @@ public class DataSeeder {
             PasswordEncoder passwordEncoder
     ) {
         return args -> new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
-                if (userRepository.count() > 0 && userRepository.findByUserIdNumber("2026-1001").isEmpty()) {
+                boolean seededDatabase = userRepository.findByUserIdNumber("2026-0001")
+                        .filter(user -> user.getUserType() == UserType.TEACHER)
+                        .filter(user -> "Jose".equals(user.getFirstName()))
+                        .filter(user -> "Rizal".equals(user.getLastName()))
+                        .isPresent();
+                if (userRepository.count() > 0 && !seededDatabase) {
                     return;
                 }
 
@@ -37,22 +42,22 @@ public class DataSeeder {
                 // ============================================
 
                 // Teacher 1
-                User teacherUser1 = createTeacher("Jose", "Rizal", "2026-1001", userRepository, passwordEncoder);
+                User teacherUser1 = createTeacher("Jose", "Rizal", "2026-0001", userRepository, passwordEncoder);
                 Teacher teacher1 = teacherUser1.getTeacher();
 
                 // Teacher 2
-                User teacherUser2 = createTeacher("Maria", "Clara", "2026-1002", userRepository, passwordEncoder);
+                User teacherUser2 = createTeacher("Maria", "Clara", "2026-0002", userRepository, passwordEncoder);
                 Teacher teacher2 = teacherUser2.getTeacher();
 
                 // Students
-                User studentUser1 = createStudent("Juan", "Dela Cruz", "2026-0001", userRepository, passwordEncoder);
-                User studentUser2 = createStudent("Maria", "Santos", "2026-0002", userRepository, passwordEncoder);
-                User studentUser3 = createStudent("Pedro", "Garcia", "2026-0003", userRepository, passwordEncoder);
-                User studentUser4 = createStudent("Ana", "Reyes", "2026-0004", userRepository, passwordEncoder);
-                User studentUser5 = createStudent("Luis", "Torres", "2026-0005", userRepository, passwordEncoder);
+                User studentUser1 = createStudent("Juan", "Dela Cruz", "2026-0003", userRepository, passwordEncoder);
+                User studentUser2 = createStudent("Maria", "Santos", "2026-0004", userRepository, passwordEncoder);
+                User studentUser3 = createStudent("Pedro", "Garcia", "2026-0005", userRepository, passwordEncoder);
+                User studentUser4 = createStudent("Ana", "Reyes", "2026-0006", userRepository, passwordEncoder);
+                User studentUser5 = createStudent("Luis", "Torres", "2026-0007", userRepository, passwordEncoder);
 
                 // Admin
-                createAdmin("Admin", "User", "2026-9999", userRepository, passwordEncoder);
+                createAdmin("Admin", "User", "2026-0008", userRepository, passwordEncoder);
 
                 // ============================================
                 // 2. Create Subjects (teacher teaches subject + section)

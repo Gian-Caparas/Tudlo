@@ -13,14 +13,16 @@ public final class UserDto {
     /** The password is write-only: it is hashed and never returned. */
     public record Request(
             @NotBlank(message = "First name is required")
+            @Size(max = 150)
             String firstName,
             @NotBlank(message = "Last name is required")
+            @Size(max = 150)
             String lastName,
-            @NotBlank(message = "ID number is required")
-            String idNumber,
+            @NotBlank(message = "Password is required")
+            @Size(min = 8, max = 72, message = "Password must be between 8 and 72 characters")
+            String password,
             @NotNull(message = "User type is required")
             UserType userType
-
     ) {
     }
 
@@ -28,7 +30,7 @@ public final class UserDto {
             Long id,
             String firstName,
             String lastName,
-            String idNumber,
+            String userIdNumber,
             UserType userType,
             LocalDateTime createdAt
     ) {
