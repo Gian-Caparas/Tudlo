@@ -16,6 +16,7 @@ import SystemMaintenancePage from '@/pages/admin/SystemMaintenancePage.jsx'
 import MyProgressPage from '@/pages/student/MyProgressPage.jsx'
 import TopicsToReviewPage from '@/pages/student/TopicsToReviewPage.jsx'
 import MySubmissionsPage from '@/pages/student/MySubmissionsPage.jsx'
+import MyLearningPage from '@/pages/student/MyLearningPage.jsx'
 
 function renderPage(page, onNavigate, userName, savedItems, onSaveMapping) {
   switch (page) {
@@ -41,6 +42,8 @@ function renderPage(page, onNavigate, userName, savedItems, onSaveMapping) {
       return <TopicsToReviewPage />
     case 'My Submissions':
       return <MySubmissionsPage />
+    case 'My Learning':
+      return <MyLearningPage />
     default:
       return null
   }
