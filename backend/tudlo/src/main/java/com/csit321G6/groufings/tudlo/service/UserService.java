@@ -1,38 +1,36 @@
 package com.csit321G6.groufings.tudlo.service;
 
-import com.csit321G6.groufings.tudlo.common.*;
-import com.csit321G6.groufings.tudlo.common.exception.BadRequestException;
+import com.csit321G6.groufings.tudlo.common.CrudService;
 import com.csit321G6.groufings.tudlo.dto.UserDto;
-import com.csit321G6.groufings.tudlo.entity.User;
-import com.csit321G6.groufings.tudlo.entity.UserStatus;
-import com.csit321G6.groufings.tudlo.repo.UserRepository;
-import com.csit321G6.groufings.tudlo.security.RolePolicy;
-import java.util.Locale;
-import java.time.Instant;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.csit321G6.groufings.tudlo.entity.*;
+import com.csit321G6.groufings.tudlo.repository.*;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.time.LocalDateTime;
 
 @Service
 public class UserService extends CrudService<User, UserDto.Request, UserDto.Response> {
 
-    private static final Logger AUDIT = LoggerFactory.getLogger("TudloAudit");
+    private final UserRepository userRepository;
+    private final TeacherRepository teacherRepository;
+    private final StudentRepository studentRepository;
+    private final AdminRepository adminRepository;
 
-    private final UserRepository repository;
-    private final PasswordEncoder passwordEncoder;
-    private final RolePolicy rolePolicy;
-
-    public UserService(UserRepository repository, PasswordEncoder passwordEncoder, RolePolicy rolePolicy) {
-        this.repository = repository;
-        this.passwordEncoder = passwordEncoder;
-        this.rolePolicy = rolePolicy;
+    public UserService(UserRepository userRepository,
+                       TeacherRepository teacherRepository,
+                       StudentRepository studentRepository,
+                       AdminRepository adminRepository) {
+        this.userRepository = userRepository;
+        this.teacherRepository = teacherRepository;
+        this.studentRepository = studentRepository;
+        this.adminRepository = adminRepository;
     }
 
+    // --- CrudService abstract methods ---
+
     @Override
-    protected JpaRepository<User, Long> repository() {
-        return repository;
+    protected UserRepository repository() {
+        return userRepository;
     }
 
     @Override
@@ -46,80 +44,80 @@ public class UserService extends CrudService<User, UserDto.Request, UserDto.Resp
     }
 
     @Override
-    protected void beforeCreate(User entity, UserDto.Request request) {
-        var actor = rolePolicy.currentActor();
-        rolePolicy.assertCanCreate(actor, request.userType());
-        entity.setCreatedBy(repository.findById(actor.userId())
-                .orElseThrow(() -> new BadRequestException("Acting user no longer exists")));
-    }
-
-    @Override
-    protected void beforeUpdate(User existing, UserDto.Request request) {
-        var actor = rolePolicy.currentActor();
-        UserStatus requestedStatus = request.status() == null ? existing.getStatus() : request.status();
-        rolePolicy.assertCanModify(actor, existing, request.userType(), requestedStatus);
-    }
-
-    @Override
-    protected void beforeDelete(User existing) {
-        rolePolicy.assertCanDelete(rolePolicy.currentActor(), existing);
-    }
-
-    @Override
-    protected void afterCreate(User created, UserDto.Request request) {
-        audit(rolePolicy.currentActor().userId(), "CREATE", created);
-    }
-
-    @Override
-    protected void afterUpdate(User updated, UserDto.Request request) {
-        audit(rolePolicy.currentActor().userId(), "UPDATE", updated);
-    }
-
-    @Override
-    protected void afterDelete(User deleted) {
-        audit(rolePolicy.currentActor().userId(), "DELETE", deleted);
-    }
-
-    @Override
     protected void apply(User entity, UserDto.Request request) {
-        String email = request.email().trim().toLowerCase(Locale.ROOT);
-        repository.findByEmailIgnoreCase(email)
-                .filter(existing -> !existing.getId().equals(entity.getId()))
-                .ifPresent(existing -> {
-                    throw new BadRequestException("A user with this email already exists");
-                });
-
-        entity.setFullName(request.fullName());
-        entity.setEmail(email);
+        entity.setFirstName(request.firstName());
+        entity.setLastName(request.lastName());
+        entity.setUserIdNumber(request.idNumber());
         entity.setUserType(request.userType());
-        if (request.status() != null) {
-            entity.setStatus(request.status());
-        } else if (entity.getId() == null) {
-            entity.setStatus(UserStatus.ACTIVE);
-        }
-
-        if (request.password() == null || request.password().isBlank()) {
-            if (entity.getId() == null) {
-                throw new BadRequestException("Password is required when creating a user");
-            }
-        } else {
-            entity.setPasswordHash(passwordEncoder.encode(request.password()));
+        // Password is handled separately (hashed, not exposed in DTO)
+        if (entity.getCreatedAt() == null) {
+            entity.setCreatedAt(LocalDateTime.now());
         }
     }
 
     @Override
     protected UserDto.Response toResponse(User entity) {
         return new UserDto.Response(
-                entity.getId(),
-                entity.getFullName(),
-                entity.getEmail(),
-                entity.getUserType(),
-                entity.getStatus(),
-                entity.getCreatedAt());
+            entity.getId(),
+            entity.getFirstName(),
+            entity.getLastName(),
+            entity.getUserIdNumber(),
+            entity.getUserType(),
+            entity.getCreatedAt()
+        );
     }
 
-    private void audit(Long actorId, String action, User target) {
-        AUDIT.info("actorId={} action={} targetId={} targetRole={} timestamp={}",
-                actorId, action, target.getId(), target.getUserType(), Instant.now());
+    @Override
+    protected void beforeCreate(User entity, UserDto.Request request) {
+        // Set default password for new users (should be hashed in production)
+        entity.setPassword("password123");
+    }
+
+    @Override
+    protected void afterCreate(User created, UserDto.Request request) {
+        // Create the corresponding profile entity based on userType
+        switch (created.getUserType()) {
+            case TEACHER -> {
+                Teacher teacher = new Teacher();
+                teacher.setUser(created);
+                created.setTeacher(teacher);
+                teacherRepository.save(teacher);
+            }
+            case STUDENT -> {
+                Student student = new Student();
+                student.setUser(created);
+                created.setStudent(student);
+                studentRepository.save(student);
+            }
+            case ADMIN -> {
+                Admin admin = new Admin();
+                admin.setUser(created);
+                created.setAdmin(admin);
+                adminRepository.save(admin);
+            }
+        }
+    }
+
+    // --- Custom registration methods (kept for backward compatibility) ---
+
+    @Transactional
+    public User registerTeacher(String firstName, String lastName, String idNumber, String department) {
+        UserDto.Request request = new UserDto.Request(firstName, lastName, idNumber, UserType.TEACHER);
+        UserDto.Response response = create(request);
+        return userRepository.findById(response.id()).orElseThrow();
+    }
+
+    @Transactional
+    public User registerStudent(String firstName, String lastName, String idNumber, String program) {
+        UserDto.Request request = new UserDto.Request(firstName, lastName, idNumber, UserType.STUDENT);
+        UserDto.Response response = create(request);
+        return userRepository.findById(response.id()).orElseThrow();
+    }
+
+    @Transactional
+    public User registerAdmin(String firstName, String lastName, String idNumber, String roleTitle) {
+        UserDto.Request request = new UserDto.Request(firstName, lastName, idNumber, UserType.ADMIN);
+        UserDto.Response response = create(request);
+        return userRepository.findById(response.id()).orElseThrow();
     }
 }

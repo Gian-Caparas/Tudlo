@@ -11,10 +11,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-/**
- * Standard REST endpoints shared by every entity:
- * GET (all), GET (one), POST, PUT, DELETE.
- */
 public abstract class CrudController<Req, Res> {
 
     protected abstract CrudService<?, Req, Res> service();
