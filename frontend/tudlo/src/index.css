@@ -432,6 +432,12 @@
   grid-column: 2;
   min-width: 0;
 }
+.app-shell--no-sidebar {
+  grid-template-columns: 1fr;
+}
+.app-shell--no-sidebar > main {
+  grid-column: 1;
+}
 .app-shell header {
   height: 68px;
   background: rgba(255, 255, 255, 0.95);
