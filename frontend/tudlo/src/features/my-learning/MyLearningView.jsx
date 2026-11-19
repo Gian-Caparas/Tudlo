@@ -189,6 +189,32 @@ export function MyLearningView() {
     })}
   </div>
 </section>
+
+  <section className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-6">
+  <div className="flex items-center gap-4">
+    <svg
+      className="h-5 w-5 text-teal-700"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+
+    <div>
+      <p className="font-medium text-teal-700">Support from your teacher</p>
+      <p className="mt-1 text-sm text-slate-500">{data.support.description}</p>
+    </div>
+  </div>
+
+  <p className="text-2xl font-semibold text-teal-700">
+    {data.support.scoreBefore}% → {data.support.scoreAfter}%
+  </p>
+</section>
      
     </div>
   )
