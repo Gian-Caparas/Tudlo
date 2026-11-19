@@ -113,6 +113,52 @@ export function MyLearningView() {
         </div>
       </div>
     </section>
+
+    <section className="rounded-xl border border-slate-200 bg-white p-6">
+  <h2 className="text-lg font-semibold text-slate-900">Topics to review</h2>
+
+  <div className="mt-4 divide-y divide-slate-200">
+    {data.topicsToReview.map((topic, index) => {
+      const isHigh = topic.priority === 'High priority'
+
+      return (
+        <div
+          key={topic.name}
+          className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
+        >
+          <div>
+            <p className="font-medium text-slate-900">
+              {String(index + 1).padStart(2, '0')} {topic.name}
+            </p>
+            <p className="mt-2 text-[10px] uppercase tracking-wide text-slate-500">
+              Learning outcome
+            </p>
+            <p className="text-sm text-slate-900">{topic.learningOutcome}</p>
+          </div>
+
+          <div className="flex flex-col items-end gap-2">
+            <span
+              className={`text-xl font-semibold ${
+                isHigh ? 'text-red-600' : 'text-slate-900'
+              }`}
+            >
+              {topic.average}%
+            </span>
+            <span
+              className={`rounded-full px-4 py-1 text-xs ${
+                isHigh
+                  ? 'bg-red-50 text-red-600'
+                  : 'bg-amber-50 text-amber-700'
+              }`}
+            >
+              {topic.priority}
+            </span>
+          </div>
+        </div>
+      )
+       })}
+       </div>
+    </section>
      
     </div>
   )
