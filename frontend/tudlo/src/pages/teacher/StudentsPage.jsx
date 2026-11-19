@@ -1,5 +1,5 @@
-import { PlaceholderPage } from '@/components/shared/PlaceholderPage.jsx'
+import { StudentsView } from '@/features/students/StudentsView.jsx'
 
-export default function StudentsPage() {
-  return <PlaceholderPage title="Students" />
+export default function StudentsPage(props) {
+  return <StudentsView {...props} />
 }
