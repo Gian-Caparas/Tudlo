@@ -6,11 +6,19 @@ const barColor = (average) => {
   return 'bg-orange-400'
 }
 
+const scoreColor = (percent, best) => {
+  if (percent < 60) return 'text-red-600'
+  if (percent === best) return 'text-teal-700'
+  return 'text-slate-900'
+}
+
 
 export function MyLearningView() {
   const data = myLearningMock
   const strongest = [...data.topics].sort((a, b) => b.average - a.average)[0]
   const focusTopics = data.topics.filter((t) => t.average < 60)
+  const scores = data.scoreBreakdown.scores
+  const bestPercent = Math.max(...scores.map((s) => (s.score / s.maxScore) * 100))
 
   return (
     <div className="space-y-6">
@@ -159,6 +167,28 @@ export function MyLearningView() {
        })}
        </div>
     </section>
+
+    <section className="rounded-xl border border-slate-200 bg-white p-6">
+  <h2 className="text-lg font-semibold text-slate-900">
+    Scores behind {data.scoreBreakdown.subject}
+  </h2>
+
+  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+    {scores.map((item) => {
+      const percent = (item.score / item.maxScore) * 100
+      const color = scoreColor(percent, bestPercent)
+
+      return (
+        <div key={item.label} className="rounded-lg bg-slate-50 px-4 py-3 text-center">
+          <p className={`text-xs ${color}`}>{item.label}</p>
+          <p className={`text-sm font-semibold ${color}`}>
+            {item.score}/{item.maxScore}
+          </p>
+        </div>
+      )
+    })}
+  </div>
+</section>
      
     </div>
   )
