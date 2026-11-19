@@ -3,13 +3,10 @@ import { Badge } from '@/components/ui/Badge.jsx'
 import { Avatar } from '@/components/ui/Avatar.jsx'
 import { Icon } from '@/components/ui/Icon.jsx'
 import { LineChart } from '@/components/ui/LineChart.jsx'
-import { classInfo, rules, topicAverages } from '@/mockdata/mockData.js'
+import { classInfo, rules, subjects, assessmentNames } from '@/mockdata/mockData.js'
+import { average, getPercent, getNeedsSupport } from '@/utils/scoring.js'
 
-// ---------- helpers: everything on the page is calculated from the scores ----------
-
-const percentOf = (record) => (record.score / record.maxScore) * 100
-const average = (numbers) =>
-  numbers.length ? numbers.reduce((sum, n) => sum + n, 0) / numbers.length : 0
+// ---------- helpers: everything on the page is calculated from the data ----------
 
 function getGreeting() {
   const hour = new Date().getHours()
@@ -18,57 +15,60 @@ function getGreeting() {
   return 'Good evening'
 }
 
-// Average percent per assessment, in the order they first appear
-function getPerformance(scores) {
-  const names = [...new Set(scores.map((r) => r.assessment))]
-  return names.map((name) => {
-    const graded = scores.filter((r) => r.assessment === name && r.score !== null)
-    return { name, percent: Math.round(average(graded.map(percentOf))) }
-  })
+// Class average % for each assessment (all subjects together). Only assessments that have scores.
+function getPerformance(scores, mapping) {
+  return assessmentNames
+    .map((name) => {
+      const percents = scores
+        .filter((r) => r.assessment === name)
+        .map((r) => getPercent(r, mapping))
+        .filter((p) => p !== null)
+      return { name, percent: Math.round(average(percents)), count: percents.length }
+    })
+    .filter((item) => item.count > 0)
 }
 
-function getStats(scores, performance) {
-  const graded = scores.filter((r) => r.score !== null)
-  const students = [...new Set(scores.map((r) => r.student))]
+function getStats(scores, students, mapping, performance) {
+  const percentsOf = (studentId) =>
+    scores
+      .filter((r) => r.studentId === studentId)
+      .map((r) => getPercent(r, mapping))
+      .filter((p) => p !== null)
 
-  const passed = students.filter((name) => {
-    const mine = graded.filter((r) => r.student === name).map(percentOf)
-    return average(mine) >= rules.passMark
-  }).length
+  const allPercents = scores.map((r) => getPercent(r, mapping)).filter((p) => p !== null)
+  const scoredStudents = students.filter((s) => percentsOf(s.id).length > 0)
+  const passed = scoredStudents.filter((s) => average(percentsOf(s.id)) >= rules.passMark).length
+
+  // every student should have a score for every assessment of every subject that has scores
+  const subjectsWithScores = new Set(scores.map((r) => r.subject)).size
+  const expected = students.length * subjectsWithScores * assessmentNames.length
 
   const last = performance[performance.length - 1]
   const before = performance[performance.length - 2]
 
   return {
-    classAverage: `${average(graded.map(percentOf)).toFixed(1)}%`,
-    passRate: `${students.length ? Math.round((passed / students.length) * 100) : 0}%`,
-    passDetail: `${passed} of ${students.length}`,
-    completion: `${scores.length ? Math.round((graded.length / scores.length) * 100) : 0}%`,
-    completionDetail: `${graded.length} of ${scores.length}`,
+    classAverage: `${average(allPercents).toFixed(1)}%`,
+    passRate: `${scoredStudents.length ? Math.round((passed / scoredStudents.length) * 100) : 0}%`,
+    passDetail: `${passed} of ${scoredStudents.length}`,
+    completion: `${expected ? Math.round((allPercents.length / expected) * 100) : 0}%`,
+    completionDetail: `${allPercents.length} of ${expected}`,
     change: last && before ? last.percent - before.percent : 0,
   }
 }
 
-// Students with a score under the threshold, or with a missing score
-function getNeedsSupport(scores) {
-  const names = [...new Set(scores.map((r) => r.student))]
-  const list = []
-
-  names.forEach((name) => {
-    const mine = scores.filter((r) => r.student === name)
-    const lowest = mine
-      .filter((r) => r.score !== null && percentOf(r) < rules.supportThreshold)
-      .sort((a, b) => percentOf(a) - percentOf(b))[0]
-    const missing = mine.find((r) => r.score === null)
-
-    if (lowest) {
-      list.push({ name, detail: `${lowest.assessment} · ${Math.round(percentOf(lowest))}%`, tag: 'Below Threshold' })
-    } else if (missing) {
-      list.push({ name, detail: missing.assessment, tag: 'Overdue' })
-    }
+// The subject with the lowest class average
+function getLowestSubject(scores, mapping) {
+  let lowest = null
+  subjects.forEach((name) => {
+    const percents = scores
+      .filter((r) => r.subject === name)
+      .map((r) => getPercent(r, mapping))
+      .filter((p) => p !== null)
+    if (percents.length === 0) return
+    const percent = Math.round(average(percents))
+    if (lowest === null || percent < lowest.percent) lowest = { name, percent }
   })
-
-  return list
+  return lowest
 }
 
 // ---------- small components ----------
@@ -119,12 +119,12 @@ function SupportRow({ student, onOpen }) {
 
 // ---------- the page ----------
 
-export function DashboardView({ scores, userName, onNavigate }) {
-  const performance = getPerformance(scores)
-  const stats = getStats(scores, performance)
-  const needsSupport = getNeedsSupport(scores)
+export function DashboardView({ scores, students, mapping, userName, onNavigate }) {
+  const performance = getPerformance(scores, mapping)
+  const stats = getStats(scores, students, mapping, performance)
+  const needsSupport = getNeedsSupport(scores, students, mapping)
+  const lowestSubject = getLowestSubject(scores, mapping)
   const trendingUp = stats.change >= 0
-  const lowestTopic = topicAverages.reduce((low, t) => (t.percent < low.percent ? t : low))
 
   return (
     <div>
@@ -170,7 +170,7 @@ export function DashboardView({ scores, userName, onNavigate }) {
               labels={performance.map((p) => p.name)}
             />
           ) : (
-            <p>No scores yet. Import a CSV to get started.</p>
+            <p>No scores yet.</p>
           )}
         </SectionCard>
 
@@ -181,22 +181,24 @@ export function DashboardView({ scores, userName, onNavigate }) {
           className="support-list"
         >
           {needsSupport.map((s) => (
-            <SupportRow key={s.name} student={s} onOpen={() => onNavigate('Students')} />
+            <SupportRow key={s.id} student={s} onOpen={() => onNavigate('Students')} />
           ))}
         </SectionCard>
       </div>
 
-      <section className="insight-banner">
-        <span className="insight-mark">i</span>
-        <div>
-          <strong>Insight worth noticing</strong>
-          <p>
-            {lowestTopic.name} is the lowest-performing topic across the class at {lowestTopic.percent}%.
-            Consider revisiting it before the next assessment.
-          </p>
-        </div>
-        <button onClick={() => onNavigate('Learning Gaps')}>View learning gaps →</button>
-      </section>
+      {lowestSubject && (
+        <section className="insight-banner">
+          <span className="insight-mark">i</span>
+          <div>
+            <strong>Insight worth noticing</strong>
+            <p>
+              {lowestSubject.name} is the lowest-performing subject across the class at {lowestSubject.percent}%.
+              Consider revisiting it before the next assessment.
+            </p>
+          </div>
+          <button onClick={() => onNavigate('Learning Gaps')}>View learning gaps →</button>
+        </section>
+      )}
     </div>
   )
 }
