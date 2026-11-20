@@ -2,7 +2,7 @@ import { Header } from "@/components/shared/Header.jsx";
 import { Sidebar } from "@/components/shared/Sidebar.jsx";
 export function MainLayout({ role, page, userName, onNavigate, onLogout, children }) {
 
-  const showSidebar = role !== "student";
+  const showSidebar = role !== "student" && role !== "admin";
   return (
     <div className={showSidebar ? "app-shell" : "app-shell app-shell--no-sidebar"}>
       {showSidebar && <Sidebar role={role} page={page} onNavigate={onNavigate} />}
