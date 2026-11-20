@@ -12,8 +12,6 @@ export const navigationByRole = {
     { label: "Support", icon: "heart" },
   ],
   student: [
-    { label: "My Progress", icon: "chart" },
-    { label: "Topics to Review", icon: "heat" },
-    { label: "My Submissions", icon: "file" },
+    { label: "My Learning", icon: "chart" },
   ],
 };

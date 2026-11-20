@@ -1,10 +1,10 @@
 import { apiRequest } from '@/lib/apiClient.js'
 
 export const authService = {
-  async login(email, password) {
+  async login(userIdNumber, password) {
     return apiRequest('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ userIdNumber, password }),
       isLogin: true,
     })
   },

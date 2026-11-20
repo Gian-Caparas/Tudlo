@@ -5,6 +5,7 @@ import com.csit321G6.groufings.tudlo.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -23,10 +24,16 @@ public class DataSeeder {
             ScoresRepository scoresRepository,
             LearningGapRepository learningGapRepository,
             MyProgressRepository myProgressRepository,
-            PlatformTransactionManager transactionManager
+            PlatformTransactionManager transactionManager,
+            PasswordEncoder passwordEncoder
     ) {
         return args -> new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
-                if (userRepository.count() > 0 && userRepository.findByUserIdNumber("2026-1001").isEmpty()) {
+                boolean seededDatabase = userRepository.findByUserIdNumber("2026-0001")
+                        .filter(user -> user.getUserType() == UserType.TEACHER)
+                        .filter(user -> "Jose".equals(user.getFirstName()))
+                        .filter(user -> "Rizal".equals(user.getLastName()))
+                        .isPresent();
+                if (userRepository.count() > 0 && !seededDatabase) {
                     return;
                 }
 
@@ -35,22 +42,22 @@ public class DataSeeder {
                 // ============================================
 
                 // Teacher 1
-                User teacherUser1 = createTeacher("Jose", "Rizal", "2026-1001", userRepository);
+                User teacherUser1 = createTeacher("Jose", "Rizal", "2026-0001", userRepository, passwordEncoder);
                 Teacher teacher1 = teacherUser1.getTeacher();
 
                 // Teacher 2
-                User teacherUser2 = createTeacher("Maria", "Clara", "2026-1002", userRepository);
+                User teacherUser2 = createTeacher("Maria", "Clara", "2026-0002", userRepository, passwordEncoder);
                 Teacher teacher2 = teacherUser2.getTeacher();
 
                 // Students
-                User studentUser1 = createStudent("Juan", "Dela Cruz", "2026-0001", userRepository);
-                User studentUser2 = createStudent("Maria", "Santos", "2026-0002", userRepository);
-                User studentUser3 = createStudent("Pedro", "Garcia", "2026-0003", userRepository);
-                User studentUser4 = createStudent("Ana", "Reyes", "2026-0004", userRepository);
-                User studentUser5 = createStudent("Luis", "Torres", "2026-0005", userRepository);
+                User studentUser1 = createStudent("Juan", "Dela Cruz", "2026-0003", userRepository, passwordEncoder);
+                User studentUser2 = createStudent("Maria", "Santos", "2026-0004", userRepository, passwordEncoder);
+                User studentUser3 = createStudent("Pedro", "Garcia", "2026-0005", userRepository, passwordEncoder);
+                User studentUser4 = createStudent("Ana", "Reyes", "2026-0006", userRepository, passwordEncoder);
+                User studentUser5 = createStudent("Luis", "Torres", "2026-0007", userRepository, passwordEncoder);
 
                 // Admin
-                createAdmin("Admin", "User", "2026-9999", userRepository);
+                createAdmin("Admin", "User", "2026-0008", userRepository, passwordEncoder);
 
                 // ============================================
                 // 2. Create Subjects (teacher teaches subject + section)
@@ -263,8 +270,8 @@ public class DataSeeder {
 
     // Helper methods
 
-    private User createStudent(String firstName, String lastName, String idNumber, UserRepository userRepository) {
-        User studentUser = findOrCreateUser(firstName, lastName, idNumber, "pass1234", UserType.STUDENT, userRepository);
+    private User createStudent(String firstName, String lastName, String idNumber, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        User studentUser = findOrCreateUser(firstName, lastName, idNumber, "pass1234", UserType.STUDENT, userRepository, passwordEncoder);
         if (studentUser.getStudent() == null) {
             Student student = new Student();
             student.setUser(studentUser);
@@ -274,8 +281,8 @@ public class DataSeeder {
         return studentUser;
     }
 
-    private User createTeacher(String firstName, String lastName, String idNumber, UserRepository userRepository) {
-        User teacherUser = findOrCreateUser(firstName, lastName, idNumber, "admin123", UserType.TEACHER, userRepository);
+    private User createTeacher(String firstName, String lastName, String idNumber, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        User teacherUser = findOrCreateUser(firstName, lastName, idNumber, "admin123", UserType.TEACHER, userRepository, passwordEncoder);
         if (teacherUser.getTeacher() == null) {
             Teacher teacher = new Teacher();
             teacher.setUser(teacherUser);
@@ -285,8 +292,8 @@ public class DataSeeder {
         return teacherUser;
     }
 
-    private User createAdmin(String firstName, String lastName, String idNumber, UserRepository userRepository) {
-        User adminUser = findOrCreateUser(firstName, lastName, idNumber, "admin123", UserType.ADMIN, userRepository);
+    private User createAdmin(String firstName, String lastName, String idNumber, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        User adminUser = findOrCreateUser(firstName, lastName, idNumber, "admin123", UserType.ADMIN, userRepository, passwordEncoder);
         if (adminUser.getAdmin() == null) {
             Admin admin = new Admin();
             admin.setUser(adminUser);
@@ -296,17 +303,22 @@ public class DataSeeder {
         return adminUser;
     }
 
-    private User findOrCreateUser(String firstName, String lastName, String idNumber, String password, UserType userType, UserRepository userRepository) {
-        return userRepository.findByUserIdNumber(idNumber).orElseGet(() -> {
-            User user = new User();
-            user.setFirstName(firstName);
-            user.setLastName(lastName);
-            user.setUserIdNumber(idNumber);
-            user.setPassword(password);
-            user.setCreatedAt(LocalDateTime.now());
-            user.setUserType(userType);
-            return userRepository.save(user);
+    private User findOrCreateUser(String firstName, String lastName, String idNumber, String password, UserType userType, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        User user = userRepository.findByUserIdNumber(idNumber).orElseGet(() -> {
+            User newUser = new User();
+            newUser.setFirstName(firstName);
+            newUser.setLastName(lastName);
+            newUser.setUserIdNumber(idNumber);
+            newUser.setPassword(passwordEncoder.encode(password));
+            newUser.setCreatedAt(LocalDateTime.now());
+            newUser.setUserType(userType);
+            return userRepository.save(newUser);
         });
+        if (password.equals(user.getPassword())) {
+            user.setPassword(passwordEncoder.encode(password));
+            user = userRepository.save(user);
+        }
+        return user;
     }
 
     private void createSubject(SubjectRepository repo, String subjectName, String classSection, Teacher teacher) {

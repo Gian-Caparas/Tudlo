@@ -4,111 +4,87 @@ import { Avatar } from '@/components/ui/Avatar.jsx'
 import { Badge } from '@/components/ui/Badge.jsx'
 import { Icon } from '@/components/ui/Icon.jsx'
 import { useAuth } from '@/hooks/useAuth.js'
-import { assignableRoles, canManage } from '@/utils/permissions.js'
+import { assignableRoles } from '@/utils/permissions.js'
 import { usersService } from '@/services/usersService.js'
 import { AddUsers } from './AddUsers.jsx'
 
+// Human-readable labels for each role
 const roleLabels = {
   ADMIN: 'Admin',
   TEACHER: 'Teacher',
   STUDENT: 'Student',
 }
 
-function formatCreatedDate(value) {
-  if (!value) return '—'
-  const datePart = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/)
-  if (!datePart) return '—'
-  const date = new Date(Number(datePart[1]), Number(datePart[2]) - 1, Number(datePart[3]))
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: '2-digit',
-    year: 'numeric',
-  }).format(date)
+// Combine first + last name into a single display name
+function getFullName(user) {
+  return [user.firstName, user.lastName].filter(Boolean).join(' ')
 }
 
 export function AllUsers() {
-  const { role: actorRole, user: currentUser } = useAuth()
-  const [users, setUsers] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState('')
-  const [retryCount, setRetryCount] = useState(0)
-  const [actionError, setActionError] = useState('')
-  const [search, setSearch] = useState('')
-  const [roleFilter, setRoleFilter] = useState('ALL')
-  const [showAddUser, setShowAddUser] = useState(false)
-  const [updatingId, setUpdatingId] = useState(null)
+  const { role: actorRole } = useAuth()
+
+  // --- Data state ---
+  const [users, setUsers] = useState([])          // list of users from server
+  const [loading, setLoading] = useState(true)    // fetch in progress
+  const [loadError, setLoadError] = useState('')  // fetch error message
+  const [retryCount, setRetryCount] = useState(0) // bump to re-run fetch
+
+  // --- UI state ---
+  const [search, setSearch] = useState('')             // search input
+  const [roleFilter, setRoleFilter] = useState('ALL')  // role dropdown
+  const [showAddUser, setShowAddUser] = useState(false) // show add modal
+  const [notice, setNotice] = useState('')              // success message
+
+  // Roles the current user is allowed to assign
   const availableRoles = assignableRoles(actorRole)
 
+  // Fetch all users on mount (and whenever retryCount changes)
   useEffect(() => {
     let active = true
     setLoading(true)
     setLoadError('')
+
     usersService.getAll()
-      .then((result) => {
-        if (active) {
-          setUsers(result)
-          setLoadError('')
-        }
-      })
-      .catch((error) => {
-        if (active) setLoadError(error.message)
-      })
-      .finally(() => {
-        if (active) setLoading(false)
-      })
-    return () => {
-      active = false
-    }
+      .then((result) => { if (active) setUsers(result) })
+      .catch((err) => { if (active) setLoadError(err.message) })
+      .finally(() => { if (active) setLoading(false) })
+
+    // Prevent state updates if component unmounted mid-fetch
+    return () => { active = false }
   }, [retryCount])
 
+  // Filter users by search text (name or ID) and selected role
   const filteredUsers = useMemo(() => {
     const query = search.trim().toLowerCase()
     return users.filter((user) => {
+      const fullName = getFullName(user).toLowerCase()
       const matchesSearch = !query
-        || user.fullName?.toLowerCase().includes(query)
-        || user.email?.toLowerCase().includes(query)
+        || fullName.includes(query)
+        || user.userIdNumber?.toLowerCase().includes(query)
       const matchesRole = roleFilter === 'ALL' || user.userType === roleFilter
       return matchesSearch && matchesRole
     })
   }, [users, search, roleFilter])
 
-  const activeCount = users.filter((user) => user.status === 'ACTIVE').length
-  const teacherCount = users.filter((user) => user.userType === 'TEACHER').length
-  const studentCount = users.filter((user) => user.userType === 'STUDENT').length
+  // Counts for the summary strip
+  const teacherCount = users.filter((u) => u.userType === 'TEACHER').length
+  const studentCount = users.filter((u) => u.userType === 'STUDENT').length
+  const adminCount = users.filter((u) => u.userType === 'ADMIN').length
 
+  // Called when a new user is created in the AddUsers modal
   function handleCreated(user) {
-    setUsers((currentUsers) => [...currentUsers, user])
+    setUsers((current) => [...current, user])
     setShowAddUser(false)
-    setActionError('')
-  }
-
-  async function handleAccessChange(user) {
-    const nextStatus = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
-    setUpdatingId(user.id)
-    setActionError('')
-    try {
-      const updatedUser = await usersService.update(user.id, {
-        fullName: user.fullName,
-        email: user.email,
-        userType: user.userType,
-        status: nextStatus,
-      })
-      setUsers((currentUsers) => currentUsers.map((current) => (
-        current.id === updatedUser.id ? updatedUser : current
-      )))
-    } catch (error) {
-      setActionError(error.message)
-    } finally {
-      setUpdatingId(null)
-    }
+    setNotice(`${getFullName(user)} was added with user ID ${user.userIdNumber}.`)
   }
 
   return (
     <div className="users-page">
+      {/* Page title + "Add user" button (only if actor can assign roles) */}
       <PageHeader
         eyebrow="ADMINISTRATION"
         title="Users"
-        description="Manage who can access Tudlo and what they can see."
+        description="View accounts and manage user access."
         action={availableRoles.length > 0 && (
           <button className="btn primary" type="button" onClick={() => setShowAddUser(true)}>
             <Icon name="plus" size={15} />
@@ -117,28 +93,33 @@ export function AllUsers() {
         )}
       />
 
+      {/* Summary metrics: total, admins, teachers, students */}
       <section className="metric-strip users-metrics" aria-label="User summary">
-        <div><strong>{users.length}</strong><span>Total accounts</span></div>
-        <div><strong>{activeCount}</strong><span>Active</span></div>
+        <div><strong>{users.length}</strong><span>Total users</span></div>
+        <div><strong>{adminCount}</strong><span>Admins</span></div>
         <div><strong>{teacherCount}</strong><span>Teachers</span></div>
         <div><strong>{studentCount}</strong><span>Students</span></div>
       </section>
 
+      {/* Success notice after adding a user */}
+      {notice && <p className="users-message" role="status">{notice}</p>}
+
       <section className="card users-card" aria-label="All users">
+        {/* Search + role filter toolbar */}
         <div className="toolbar">
           <label className="search">
             <Icon name="search" size={15} />
             <input
               type="search"
-              placeholder="Search name or email..."
+              placeholder="Search name or user ID..."
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              aria-label="Search users by name or email"
+              onChange={(e) => setSearch(e.target.value)}
+              aria-label="Search users by name or user ID number"
             />
           </label>
           <select
             value={roleFilter}
-            onChange={(event) => setRoleFilter(event.target.value)}
+            onChange={(e) => setRoleFilter(e.target.value)}
             aria-label="Filter users by role"
           >
             <option value="ALL">All roles</option>
@@ -148,78 +129,54 @@ export function AllUsers() {
           </select>
         </div>
 
+        {/* Error banner with retry button */}
         {loadError && (
           <div className="users-message users-error" role="alert">
             <span>{loadError}</span>
             <button
               type="button"
               className="btn secondary"
-              onClick={() => setRetryCount((current) => current + 1)}
+              onClick={() => setRetryCount((c) => c + 1)}
             >
               Retry
             </button>
           </div>
         )}
-        {actionError && <p className="users-action-error" role="alert">{actionError}</p>}
 
+        {/* Users table: shows loading / empty / rows */}
         <div className="table-wrap users-table-wrap">
           <table className="users-table">
             <thead>
               <tr>
                 <th scope="col">Full name</th>
-                <th scope="col">Email</th>
+                <th scope="col">User ID number</th>
                 <th scope="col">Role</th>
-                <th scope="col">Status</th>
-                <th scope="col">Created</th>
-                <th scope="col">Access</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td className="users-empty" colSpan="6">Loading users...</td></tr>
+                <tr><td className="users-empty" colSpan="3">Loading users...</td></tr>
               ) : filteredUsers.length === 0 && !loadError ? (
                 <tr>
-                  <td className="users-empty" colSpan="6">
+                  <td className="users-empty" colSpan="3">
                     {users.length === 0 ? 'No users found.' : 'No users match your search.'}
                   </td>
                 </tr>
               ) : filteredUsers.map((user) => {
-                const canChangeAccess = canManage(actorRole, user.userType)
-                  && String(user.id) !== String(currentUser?.id)
-                const active = user.status === 'ACTIVE'
+                const fullName = getFullName(user)
                 return (
                   <tr key={user.id}>
                     <td>
                       <div className="person">
-                        <Avatar name={user.fullName || '?'} size="sm" />
-                        <strong>{user.fullName}</strong>
+                        <Avatar name={fullName || '?'} size="sm" />
+                        <strong>{fullName}</strong>
                       </div>
                     </td>
-                    <td className="muted">{user.email}</td>
+                    <td className="muted">{user.userIdNumber}</td>
                     <td>
                       <Badge tone={user.userType?.toLowerCase() ?? 'neutral'}>
                         {roleLabels[user.userType] ?? user.userType}
                       </Badge>
-                    </td>
-                    <td>
-                      <Badge tone={active ? 'success' : 'neutral'}>
-                        <span className="dot" />
-                        {active ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </td>
-                    <td className="muted">{formatCreatedDate(user.createdAt)}</td>
-                    <td>
-                      <button
-                        type="button"
-                        className={`switch${active ? ' on' : ''}`}
-                        role="switch"
-                        aria-checked={active}
-                        aria-label={`${active ? 'Deactivate' : 'Activate'} ${user.fullName}`}
-                        disabled={!canChangeAccess || updatingId === user.id}
-                        onClick={() => handleAccessChange(user)}
-                      >
-                        <i />
-                      </button>
                     </td>
                   </tr>
                 )
@@ -229,6 +186,7 @@ export function AllUsers() {
         </div>
       </section>
 
+      {/* Add user modal */}
       {showAddUser && (
         <AddUsers
           roles={availableRoles}

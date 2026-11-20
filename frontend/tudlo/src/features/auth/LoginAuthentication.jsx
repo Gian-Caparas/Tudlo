@@ -3,7 +3,7 @@ import { Icon } from "@/components/ui/Icon.jsx";
 import { authService } from "@/services/authService";
 
 export function LoginView({ onLogin, initialError = "" }) {
-  const [email, setEmail] = useState("");
+  const [userIdNumber, setUserIdNumber] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(initialError);
 
@@ -12,15 +12,15 @@ export function LoginView({ onLogin, initialError = "" }) {
   }, [initialError]);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
+  const [fieldErrors, setFieldErrors] = useState({ userIdNumber: "", password: "" });
 
-  const emailId = useId();
+  const userIdNumberId = useId();
   const passwordId = useId();
   const errorId = useId();
 
-  function validateEmail(value) {
-    if (!value) return "Email is required";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Enter a valid email address";
+  function validateUserIdNumber(value) {
+    if (!value) return "User ID number is required";
+    if (value.length < 5) return "User ID number must be at least 5 characters";
     return "";
   }
 
@@ -30,15 +30,15 @@ export function LoginView({ onLogin, initialError = "" }) {
   }
 
   function validateForm() {
-    const emailErr = validateEmail(email);
+    const userIdNumberErr = validateUserIdNumber(userIdNumber);
     const passwordErr = validatePassword(password);
-    setFieldErrors({ email: emailErr, password: passwordErr });
-    return !emailErr && !passwordErr;
+    setFieldErrors({ userIdNumber: userIdNumberErr, password: passwordErr });
+    return !userIdNumberErr && !passwordErr;
   }
 
-  function handleEmailChange(e) {
-    setEmail(e.target.value);
-    if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: validateEmail(e.target.value) }));
+  function handleUserIdNumberChange(e) {
+    setUserIdNumber(e.target.value);
+    if (fieldErrors.userIdNumber) setFieldErrors(prev => ({ ...prev, userIdNumber: validateUserIdNumber(e.target.value) }));
     if (error) setError("");
   }
 
@@ -56,7 +56,7 @@ export function LoginView({ onLogin, initialError = "" }) {
     setError("");
 
     try {
-      const user = await authService.login(email, password);
+      const user = await authService.login(userIdNumber, password);
       onLogin(user);
     } catch (loginError) {
       setError(loginError.message);
@@ -105,23 +105,23 @@ export function LoginView({ onLogin, initialError = "" }) {
               </div>
             </div>
           )}
-          <label htmlFor={emailId}>
-            Email address
+          <label htmlFor={userIdNumberId}>
+            User ID Number
             <input
-              id={emailId}
-              value={email}
-              onChange={handleEmailChange}
-              type="email"
-              placeholder="you@tudlo.edu"
-              autoComplete="email"
-              className={fieldErrors.email ? "invalid" : ""}
-              aria-invalid={fieldErrors.email ? "true" : "false"}
-              aria-describedby={fieldErrors.email ? `${emailId}-error` : undefined}
+              id={userIdNumberId}
+              value={userIdNumber}
+              onChange={handleUserIdNumberChange}
+              type="text"
+              placeholder="e.g., 2026-0001"
+              autoComplete="username"
+              className={fieldErrors.userIdNumber ? "invalid" : ""}
+              aria-invalid={fieldErrors.userIdNumber ? "true" : "false"}
+              aria-describedby={fieldErrors.userIdNumber ? `${userIdNumberId}-error` : undefined}
               disabled={loading}
             />
-            {fieldErrors.email && (
-              <span id={`${emailId}-error`} className="field-error" role="alert">
-                {fieldErrors.email}
+            {fieldErrors.userIdNumber && (
+              <span id={`${userIdNumberId}-error`} className="field-error" role="alert">
+                {fieldErrors.userIdNumber}
               </span>
             )}
           </label>
@@ -167,7 +167,7 @@ export function LoginView({ onLogin, initialError = "" }) {
               <>Sign in <span aria-hidden="true">→</span></>
             )}
           </button>
-        
+
         </form>
       </div>
     </div>
