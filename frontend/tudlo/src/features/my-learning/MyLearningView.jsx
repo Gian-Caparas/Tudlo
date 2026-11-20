@@ -41,6 +41,9 @@ export function MyLearningView() {
   }))
   const strongest = [...topics].sort((a, b) => b.average - a.average)[0]
   const focusTopics = topics.filter((t) => t.average < 60)
+  const overallAverage = rows.length
+  ? Math.round(rows.reduce((sum, row) => sum + row.subjectAverage, 0) / rows.length)
+  : 0
 
   return (
     <div className="space-y-6">
@@ -62,10 +65,10 @@ export function MyLearningView() {
             Overall average
           </p>
           <p className="mt-6 text-5xl font-semibold text-teal-700">
-            {data.overallAverage}%
+            {overallAverage}%
           </p>
           <p className="mt-3 text-xs text-slate-500">
-            Across {data.topicCount} topics
+            Across {topics.length} subjects
           </p>
         </div>
 
