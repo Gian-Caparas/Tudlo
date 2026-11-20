@@ -83,7 +83,7 @@ export function AllUsers() {
       {/* Page title + "Add user" button (only if actor can assign roles) */}
       <PageHeader
         eyebrow="ADMINISTRATION"
-        title="Users"
+        title="User Management"
         description="View accounts and manage user access."
         action={availableRoles.length > 0 && (
           <button className="btn primary" type="button" onClick={() => setShowAddUser(true)}>
