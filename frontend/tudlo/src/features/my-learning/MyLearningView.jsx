@@ -1,4 +1,7 @@
 import { myLearningMock } from '@/mockdata/myLearningMock.js'
+import { useEffect, useState } from 'react'
+import { useAuth } from '@/hooks/useAuth.js'
+import { myProgressService } from '@/services/myProgressService.js'
 
 const barColor = (average) => {
   if (average >= 80) return 'bg-teal-700'
@@ -15,10 +18,29 @@ const scoreColor = (percent, best) => {
 
 export function MyLearningView() {
   const data = myLearningMock
-  const strongest = [...data.topics].sort((a, b) => b.average - a.average)[0]
-  const focusTopics = data.topics.filter((t) => t.average < 60)
+  const { user } = useAuth()
+  const [rows, setRows] = useState(null)
+  const [error, setError] = useState('')
+
+
+  useEffect(() => {
+    if (!user?.userIdNumber) return
+  myProgressService.getByStudent(user.userIdNumber)
+    .then(setRows)
+    .catch((err) => setError(err.message))
+  }, [user.userIdNumber])
+
   const scores = data.scoreBreakdown.scores
   const bestPercent = Math.max(...scores.map((s) => (s.score / s.maxScore) * 100))
+  if (error) return <p className="text-sm text-red-600">{error}</p>
+  if (!rows) return <p className="text-sm text-slate-500">Loading your progress…</p>
+
+  const topics = rows.map((row) => ({
+    name: row.subjectName,
+    average: Math.round(row.subjectAverage),
+  }))
+  const strongest = [...topics].sort((a, b) => b.average - a.average)[0]
+  const focusTopics = topics.filter((t) => t.average < 60)
 
   return (
     <div className="space-y-6">
