@@ -84,8 +84,8 @@ export function MyLearningView() {
 
       <section className="rounded-xl border border-slate-200 bg-white">
         <div className="border-b border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-900">Performance by Topic</h2>
-        <p className="text-sm text-slate-500">Your current average in each topic</p>
+        <h2 className="text-lg font-semibold text-slate-900">Performance by Subject</h2>
+        <p className="text-sm text-slate-500">Your current average in each subject</p>
         </div>
 
         <div className="p-6">
@@ -100,7 +100,7 @@ export function MyLearningView() {
 
       <div className="flex-1">
         <div className="flex h-56 items-end gap-6 border-b border-slate-200 pt-6">
-          {data.topics.map((topic) => (
+          {topics.map((topic) => (
             <div
               key={topic.name}
               className="flex h-full flex-1 flex-col items-center justify-end"
@@ -117,7 +117,7 @@ export function MyLearningView() {
             </div>
 
             <div className="mt-2 flex gap-6">
-              {data.topics.map((topic) => (
+              {topics.map((topic) => (
                 <p key={topic.name} className="flex-1 text-center text-xs text-slate-500">
                   {topic.name}
                 </p>
@@ -139,7 +139,7 @@ export function MyLearningView() {
         </span>
           <div className="ml-auto">
           <p>Strongest: {strongest.name}</p>
-          <p>Focus area: {focusTopics.map((t) => t.name).join(' and ')}</p>
+          <p>Focus area: {focusTopics.map((t) => t.name).join(' and ') || 'None'}</p>
         </div>
       </div>
     </section>
