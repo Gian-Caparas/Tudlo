@@ -41,6 +41,16 @@ export function MyLearningView() {
   }))
   const strongest = [...topics].sort((a, b) => b.average - a.average)[0]
   const focusTopics = topics.filter((t) => t.average < 60)
+  const reviewList = rows
+  .filter((row) => row.subjectAverage < 80)
+  .sort((a, b) => a.subjectAverage - b.subjectAverage)
+  .map((row) => ({
+    name: row.subjectName,
+    average: Math.round(row.subjectAverage),
+    completed: row.completedAssessments,
+    total: row.totalAssessments,
+    priority: row.subjectAverage < 60 ? 'High priority' : 'Medium priority',
+  }))
   const overallAverage = rows.length
   ? Math.round(rows.reduce((sum, row) => sum + row.subjectAverage, 0) / rows.length)
   : 0
@@ -148,10 +158,10 @@ export function MyLearningView() {
     </section>
 
     <section className="rounded-xl border border-slate-200 bg-white p-6">
-  <h2 className="text-lg font-semibold text-slate-900">Topics to review</h2>
+  <h2 className="text-lg font-semibold text-slate-900">Subjects to review</h2>
 
   <div className="mt-4 divide-y divide-slate-200">
-    {data.topicsToReview.map((topic, index) => {
+    {reviewList.map((topic, index) => {
       const isHigh = topic.priority === 'High priority'
 
       return (
@@ -166,7 +176,9 @@ export function MyLearningView() {
             <p className="mt-2 text-[10px] uppercase tracking-wide text-slate-500">
               Learning outcome
             </p>
-            <p className="text-sm text-slate-900">{topic.learningOutcome}</p>
+            <p className="mt-2 text-sm text-slate-500">
+            {topic.completed}/{topic.total} assessments completed
+            </p>
           </div>
 
           <div className="flex flex-col items-end gap-2">
