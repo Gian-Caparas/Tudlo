@@ -2,6 +2,8 @@ import { myLearningMock } from '@/mockdata/myLearningMock.js'
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth.js'
 import { myProgressService } from '@/services/myProgressService.js'
+import { activityService } from '@/services/activityService.js'
+import { assessmentService } from '@/services/assessmentService.js'
 
 const barColor = (average) => {
   if (average >= 80) return 'bg-teal-700'
@@ -21,6 +23,7 @@ export function MyLearningView() {
   const { user } = useAuth()
   const [rows, setRows] = useState(null)
   const [error, setError] = useState('')
+  const [scoreCard, setScoreCard] = useState(null)
 
 
   useEffect(() => {
@@ -30,8 +33,34 @@ export function MyLearningView() {
     .catch((err) => setError(err.message))
   }, [user.userIdNumber])
 
-  const scores = data.scoreBreakdown.scores
-  const bestPercent = Math.max(...scores.map((s) => (s.score / s.maxScore) * 100))
+  useEffect(() => {
+    if (!rows?.length || !user?.userIdNumber) return
+
+    activityService.getByStudent(user.userIdNumber)
+      .then(async (activities) => {
+        const hasScores = new Set(activities.map((a) => a.subjectName))
+        const target = [...rows]
+          .sort((a, b) => a.subjectAverage - b.subjectAverage)
+          .find((row) => hasScores.has(row.subjectName))
+
+        if (!target) {
+          setScoreCard({ subject: '', scores: [] })
+          return
+        }
+
+        const assessments = await assessmentService.getBySubject(target.subjectName, target.classSection)
+        const maxByItem = Object.fromEntries(assessments.map((a) => [a.assessmentItem, a.maxScore]))
+
+        setScoreCard({
+          subject: target.subjectName,
+          scores: activities
+            .filter((a) => a.subjectName === target.subjectName && maxByItem[a.activityName])
+            .map((a) => ({ label: a.activityName, score: a.score, maxScore: maxByItem[a.activityName] })),
+        })
+      })
+      .catch(() => setScoreCard({ subject: '', scores: [] }))
+  }, [rows, user?.userIdNumber])
+
   if (error) return <p className="text-sm text-red-600">{error}</p>
   if (!rows) return <p className="text-sm text-slate-500">Loading your progress…</p>
 
@@ -41,6 +70,10 @@ export function MyLearningView() {
   }))
   const strongest = [...topics].sort((a, b) => b.average - a.average)[0]
   const focusTopics = topics.filter((t) => t.average < 60)
+  const scores = scoreCard?.scores ?? []
+  const bestPercent = scores.length
+  ? Math.max(...scores.map((s) => (s.score / s.maxScore) * 100))
+  : 0
   const reviewList = rows
   .filter((row) => row.subjectAverage < 80)
   .sort((a, b) => a.subjectAverage - b.subjectAverage)
@@ -173,9 +206,6 @@ export function MyLearningView() {
             <p className="font-medium text-slate-900">
               {String(index + 1).padStart(2, '0')} {topic.name}
             </p>
-            <p className="mt-2 text-[10px] uppercase tracking-wide text-slate-500">
-              Learning outcome
-            </p>
             <p className="mt-2 text-sm text-slate-500">
             {topic.completed}/{topic.total} assessments completed
             </p>
@@ -203,11 +233,15 @@ export function MyLearningView() {
       )
        })}
        </div>
+
+       {reviewList.length === 0 && (
+          <p className="mt-4 text-sm text-slate-500">Nothing to review. Great work!</p>
+        )}
     </section>
 
     <section className="rounded-xl border border-slate-200 bg-white p-6">
   <h2 className="text-lg font-semibold text-slate-900">
-    Scores behind {data.scoreBreakdown.subject}
+    {scoreCard?.subject ? `Scores behind ${scoreCard.subject}` : 'Your scores'}
   </h2>
 
   <div className="mt-4 grid gap-3 sm:grid-cols-3">
@@ -225,6 +259,11 @@ export function MyLearningView() {
       )
     })}
   </div>
+
+  {scores.length === 0 && (
+    <p className="mt-4 text-sm text-slate-500">No scores recorded yet.</p>
+  )}
+
 </section>
 
   <section className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-6">
