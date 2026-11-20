@@ -52,7 +52,7 @@ export function MyLearningView() {
           My learning
         </p>
         <h1 className="mt-2 text-3xl font-semibold text-slate-900">
-          Your progress, {data.studentName}
+          Your progress, {user?.firstName ?? user?.fullName?.split(' ')[0] ?? 'there'}
         </h1>
         <p className="mt-2 text-sm text-slate-500">
           See what's going well and where a little more practice can help.
