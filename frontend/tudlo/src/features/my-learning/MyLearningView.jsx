@@ -31,7 +31,7 @@ export function MyLearningView() {
   myProgressService.getByStudent(user.userIdNumber)
     .then(setRows)
     .catch((err) => setError(err.message))
-  }, [user.userIdNumber])
+  }, [user?.userIdNumber])
 
   useEffect(() => {
     if (!rows?.length || !user?.userIdNumber) return
@@ -184,7 +184,7 @@ export function MyLearningView() {
         <span className="h-2.5 w-2.5 rounded-sm bg-orange-400" /> Needs focus under 60%
         </span>
           <div className="ml-auto">
-          <p>Strongest: {strongest.name}</p>
+          <p>Strongest: {strongest?.name ?? 'None'}</p>
           <p>Focus area: {focusTopics.map((t) => t.name).join(' and ') || 'None'}</p>
         </div>
       </div>
