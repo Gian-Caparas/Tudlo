@@ -21,136 +21,77 @@ export const outcomes = [
 
 export const classInfo = { code: 'CSIT321 – G6' }
 
-// Rules used by the Dashboard
 export const rules = {
-  passMark: 70,          // a student passes with an average of 70% or more
-  supportThreshold: 60,  // any score under 60% flags the student
+  passMark: 60,          // a student passes with an average of 60% or more
+  supportThreshold: 60,  // below 60% is red in Students and flags the student on the Dashboard
+  goodThreshold: 80,     // 80% and above is green in Students
 }
 
-// Settings used by Import Data
+// Settings used by Import Class List
 export const importSettings = {
-  stepNames: ['Upload CSV', 'Validate', 'Done'],
-  expectedColumns: ['Student name', 'Assessment', 'Score', 'Max score'],
+  stepNames: ['Upload CSV', 'Done'],
+  expectedColumns: ['Student ID', 'Student First Name', 'Student Last Name'],
+  expectedNaming: ['File Name: SubjectName', 'Sheet Name: SectionName'],
   maxFileSize: '10 MB',
 }
 
-// Score records. score: null means the student has not submitted yet.
-function makeScores(student, [q1, q2, mid, m1]) {
-  return [
-    { student, assessment: 'Quiz 1', score: q1, maxScore: 20 },
-    { student, assessment: 'Quiz 2', score: q2, maxScore: 20 },
-    { student, assessment: 'Midterm', score: mid, maxScore: 50 },
-    { student, assessment: 'Milestone 1', score: m1, maxScore: 100 },
-  ]
+export const subjects = ['Programming Basics', 'UI Design', 'Databases', 'Web Development', 'Algorithms']
+
+export const assessmentNames = ['Quiz 1', 'Quiz 2', 'Prelim', 'Midterm', 'Prefinal', 'Final']
+const defaultMaxScores = [20, 20, 50, 50, 50, 100]
+
+function makeItems(outcomes = []) {
+  return assessmentNames.map((name, i) => ({
+    name,
+    outcome: outcomes[i] ?? '',
+    maxScore: defaultMaxScores[i],
+  }))
 }
 
-export const seedScores = [
-  ...makeScores('Maria Santos', [12, 10, 33, 74]),
-  ...makeScores('Carlo Mendoza', [15, 14, 36, null]),
-  ...makeScores('Joshua Dela Cruz', [14, 15, 27, 70]),
-  ...makeScores('Andrei Castillo', [16, null, 38, 80]),
-  ...makeScores('Angelica Reyes', [15, 17, 37, 82]),
-  ...makeScores('Jasmine Garcia', [16, 17, 38, 85]),
-  ...makeScores('Miguel Bautista', [14, 16, 35, 78]),
-  ...makeScores('Sofia Ramos', [18, 18, 42, 90]),
-  ...makeScores('Paolo Navarro', [14, 14, 34, 76]),
-  ...makeScores('Elena Cruz', [17, 16, 40, 84]),
-  ...makeScores('Diego Torres', [15, 15, 36, 79]),
-  ...makeScores('Bianca Lim', [16, 18, 41, 88]),
-]
-
-// Same list under the name your App imports.
-export const dashboardScores = seedScores
-
-// Fixed for now. Real topic averages need the Learning Gaps page.
-export const topicAverages = [
-  { name: 'UI Design', percent: 82 },
-  { name: 'Programming Basics', percent: 58 },
-  { name: 'Databases', percent: 71 },
-  { name: 'Web Development', percent: 76 },
-  { name: 'Algorithms', percent: 64 },
-]
-
-// Topic Mapping
-export const startingItems = [
-  { name: 'Quiz 1 · Q1', hint: 'Identify visual hierarchy', topic: 'UI Design', outcome: 'LO1 · Apply design principles', maxScore: 5 },
-  { name: 'Quiz 1 · Q2', hint: 'Write a conditional statement', topic: 'Programming Basics', outcome: 'LO2 · Use control structures', maxScore: 10 },
-  { name: 'Quiz 1 · Q3', hint: 'Normalize a data table', topic: 'Databases', outcome: 'LO3 · Design relational schemas', maxScore: 10 },
-  { name: 'Quiz 2 · Q1', hint: 'Build a responsive layout', topic: 'Web Development', outcome: 'LO4 · Create responsive interfaces', maxScore: 15 },
-  { name: 'Midterm · Q4', hint: 'Analyze time complexity', topic: 'Algorithms', outcome: 'LO5 · Evaluate algorithm efficiency', maxScore: 20 },
-]
-
-// Student pages: My Progress
-export const studentProgress = {
-  firstName: 'Maria',
-  overallAverage: 67,
-  assessmentCount: 4,
-  pointsSinceLastQuiz: 9,
-  latestWin: {
-    title: 'Project Milestone 1 was your best result yet.',
-    detail: 'You scored 74%, continuing your upward trend after the midterm.',
-  },
-  scoresOverTime: [
-    { name: 'Quiz 1', percent: 62 },
-    { name: 'Quiz 2', percent: 58 },
-    { name: 'Midterm', percent: 65 },
-    { name: 'Milestone 1', percent: 74 },
-  ],
-  topicScores: [
-    { name: 'UI Design', percent: 92 },
-    { name: 'Programming Basics', percent: 48 },
-    { name: 'Databases', percent: 69 },
-    { name: 'Web Development', percent: 74 },
-    { name: 'Algorithms', percent: 56 },
-  ],
-  nextStep: {
-    title: 'A good next step',
-    detail: 'Spend 20 minutes reviewing loops and conditional logic. Your recent support session already moved this topic up by 20 points.',
-  },
+// Subject Mapping: the assessment items, learning outcomes and max scores of each subject
+export const startingMapping = {
+  'Programming Basics': makeItems([
+    'Use variables and data types in simple programs.',
+    'Apply conditional statements and loops.',
+    'Combine functions, conditionals, and loops.',
+    'Process arrays and strings to solve problems.',
+    'Debug programs and evaluate basic algorithms.',
+    'Build a complete program using core concepts.',
+  ]),
+  'UI Design': makeItems(),
+  Databases: makeItems(),
+  'Web Development': makeItems(),
+  Algorithms: makeItems(),
 }
 
-// Student pages: Topics to Review
-export const topicsToReview = {
-  heading: 'Recommended focus areas',
-  topics: [
-    {
-      name: 'Programming Basics',
-      percent: 48,
-      outcome: 'Use loops to repeat a set of instructions',
-      tip: 'Practice tracing nested loops step by step.',
-      tag: 'High Priority',
-      tone: 'danger',
-    },
-    {
-      name: 'Algorithms',
-      percent: 56,
-      outcome: 'Compare algorithms using time complexity',
-      tip: 'Review Big O examples from the midterm.',
-      tag: 'Review Next',
-      tone: 'warning',
-    },
-    {
-      name: 'Databases',
-      percent: 69,
-      outcome: 'Normalize relational data structures',
-      tip: 'Try one more third normal form exercise.',
-      tag: 'Keep Practicing',
-      tone: 'neutral',
-    },
-  ],
-  supportSession: {
-    label: 'TEACHER SUPPORT',
-    title: 'Your support activity',
-    date: 'February 14, 2025',
-    type: 'Peer Tutoring',
-    topic: 'Programming Basics · Loops practice',
-    summary: 'Paired guided exercises focused on nested loops and tracing program flow.',
-    before: 48,
-    after: 68,
-    note: 'Improved By 20 Points',
-  },
+// The class list (this is what Import Class List adds to)
+export const startingStudents = [
+  { id: '2024-0001', firstName: 'Maria', lastName: 'Santos' },
+  { id: '2024-0002', firstName: 'Joshua', lastName: 'Dela Cruz' },
+  { id: '2024-0003', firstName: 'Angelica', lastName: 'Reyes' },
+  { id: '2024-0004', firstName: 'Carlo', lastName: 'Mendoza' },
+  { id: '2024-0005', firstName: 'Jasmine', lastName: 'Garcia' },
+  { id: '2024-0006', firstName: 'Miguel', lastName: 'Bautista' },
+]
+
+// One record per score. score: null means not submitted.
+function makeScores(subject, studentId, values) {
+  return assessmentNames.map((assessment, i) => ({
+    subject,
+    studentId,
+    assessment,
+    score: values[i],
+  }))
 }
 
+export const startingScores = [
+  ...makeScores('Programming Basics', '2024-0001', [9, 11, 28, 31, 35, 74]),
+  ...makeScores('Programming Basics', '2024-0002', [11, 11, 32, 34, 37, 78]),
+  ...makeScores('Programming Basics', '2024-0003', [17, 18, 43, 44, 46, 94]),
+  ...makeScores('Programming Basics', '2024-0004', [8, 10, 25, 27, 31, 66]),
+  ...makeScores('Programming Basics', '2024-0005', [16, 17, 41, 43, 44, 90]),
+  ...makeScores('Programming Basics', '2024-0006', [12, 13, 33, 35, 38, 80]),
+]
 // Student pages: My Submissions
 export const mySubmissions = {
   description: 'Track your assessment scores and submission status.',
