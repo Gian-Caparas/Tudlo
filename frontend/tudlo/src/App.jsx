@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { useAuth } from '@/hooks/useAuth.js'
+import { useTeacherData } from '@/hooks/useTeacher.js'
+import { getNeedsSupport } from '@/utils/scoring.js'
 import { navigationByRole } from '@/routes'
 import { homePage } from '@/utils/permissions.js'
 import { MainLayout } from '@/layout/MainLayout.jsx'
 import { LoginPage } from '@/pages/Login.jsx'
 import { AccessRestrictedPage } from '@/pages/AccessRestrictedPage.jsx'
 import DashboardPage from '@/pages/teacher/DashboardPage.jsx'
-import ImportDataPage from '@/pages/teacher/ImportDataPage.jsx'
-import TopicMappingPage from '@/pages/teacher/TopicMappingPage.jsx'
+import ImportClassListPage from '@/pages/teacher/ImportClassListPage.jsx'
+import SubjectMappingPage from '@/pages/teacher/SubjectMappingPage.jsx'
 import LearningGapsPage from '@/pages/teacher/LearningGapsPage.jsx'
 import StudentsPage from '@/pages/teacher/StudentsPage.jsx'
 import SupportPage from '@/pages/teacher/SupportPage.jsx'
@@ -15,18 +17,19 @@ import UsersPage from '@/pages/admin/UsersPage.jsx'
 import SystemMaintenancePage from '@/pages/admin/SystemMaintenancePage.jsx'
 import MyLearningPage from '@/pages/student/MyLearningPage.jsx'
 
-function renderPage(page, onNavigate, userName, savedItems, onSaveMapping) {
+// Everything a page needs is passed in through the second argument
+function renderPage(page, { onNavigate, userName, teacherData }) {
   switch (page) {
     case 'Dashboard':
-      return <DashboardPage scores={[]} userName={userName} onNavigate={onNavigate} />
-    case 'Import Data':
-      return <ImportDataPage />
-    case 'Topic Mapping':
-      return <TopicMappingPage savedItems={savedItems} onSave={onSaveMapping} />
+      return <DashboardPage data={teacherData} userName={userName} onNavigate={onNavigate} />
+    case 'Import Class List':
+      return <ImportClassListPage data={teacherData} onNavigate={onNavigate} />
+    case 'Subject Mapping':
+      return <SubjectMappingPage data={teacherData} />
     case 'Learning Gaps':
       return <LearningGapsPage />
     case 'Students':
-      return <StudentsPage />
+      return <StudentsPage data={teacherData} />
     case 'Support':
       return <SupportPage />
     case 'Users':
@@ -43,7 +46,7 @@ function renderPage(page, onNavigate, userName, savedItems, onSaveMapping) {
 function App() {
   const { role, user, authLoading, sessionError, login, logout, retrySessionValidation } = useAuth()
   const [page, setPage] = useState(null)
-  const [mappingItems, setMappingItems] = useState([])
+  const teacherData = useTeacherData() // the backend data of the teacher pages
 
   function handleLogout() {
     setPage(null)
@@ -61,12 +64,16 @@ function App() {
   const currentPage = page ?? homePage(role)
   const allowedPages = navigationByRole[role] ?? []
   const pageAllowed = allowedPages.some((item) => item.label === currentPage)
+  const userName = user?.fullName ?? user?.name ?? ''
 
   return (
     <MainLayout
       role={role}
       page={currentPage}
-      userName={user?.fullName ?? user?.name ?? ''}
+      userName={userName}
+      classLabel={teacherData.classLabel}
+      studentCount={teacherData.students.length}
+      attentionCount={getNeedsSupport(teacherData.scores, teacherData.students, teacherData.items).length}
       onNavigate={setPage}
       onLogout={handleLogout}
     >
@@ -92,13 +99,7 @@ function App() {
         </section>
       )}
       {pageAllowed
-        ? renderPage(
-          currentPage,
-          setPage,
-          user?.fullName ?? user?.name ?? '',
-          mappingItems,
-          setMappingItems,
-        )
+        ? renderPage(currentPage, { onNavigate: setPage, userName, teacherData })
         : <AccessRestrictedPage onNavigateHome={() => setPage(homePage(role))} />}
     </MainLayout>
   )

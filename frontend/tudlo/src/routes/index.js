@@ -5,8 +5,8 @@ export const navigationByRole = {
   ],
   teacher: [
     { label: "Dashboard", icon: "chart" },
-    { label: "Import Data", icon: "upload" },
-    { label: "Topic Mapping", icon: "map" },
+    { label: "Import Class List", icon: "upload" },
+    { label: "Subject Mapping", icon: "map" },
     { label: "Learning Gaps", icon: "heat" },
     { label: "Students", icon: "users" },
     { label: "Support", icon: "heart" },
