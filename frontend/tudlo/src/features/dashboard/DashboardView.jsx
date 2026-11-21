@@ -83,7 +83,7 @@ function SectionCard({ title, subtitle, badge, className = '', children }) {
   )
 }
 
-const tagTone = { 'Below Threshold': 'danger', Overdue: 'warning' }
+const tagTone = { 'Below 60%': 'danger', 'Below Threshold': 'danger', Overdue: 'warning' }
 
 function SupportRow({ student, onOpen }) {
   return (
