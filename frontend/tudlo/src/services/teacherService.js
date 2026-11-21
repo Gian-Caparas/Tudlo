@@ -70,7 +70,14 @@ export const teacherService = {
     })
   },
 
-    createAssessment(subject, item) {
+  createSubject({ subjectName, classSection, teacherId }) {
+    return apiRequest('/subjects', {
+      method: 'POST',
+      body: JSON.stringify({ subjectName, classSection, teacherId }),
+    })
+  },
+
+  createAssessment(item, subject) {
     return apiRequest('/assessments', {
       method: 'POST',
       body: JSON.stringify({
@@ -85,6 +92,10 @@ export const teacherService = {
 
   deleteAssessment(id) {
     return apiRequest(`/assessments/${id}`, { method: 'DELETE' })
+  },
+
+  deleteActivity(id) {
+    return apiRequest(`/activities/${id}`, { method: 'DELETE' })
   },
 
   createActivity(activity) {

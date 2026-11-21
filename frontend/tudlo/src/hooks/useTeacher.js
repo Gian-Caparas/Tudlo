@@ -109,10 +109,26 @@ export function useTeacherData() {
   // Load the latest data again without showing the loading screen
   const refresh = useCallback(() => setReloadCount((n) => n + 1), [])
 
-  // Adds students to the class list. Students who are already in it are skipped.
-  async function importStudents(rows) {
-    const subject = { subjectName, classSection }
-    const known = new Set(students.map((s) => s.id))
+  // Imports a class list file. The class (subject + section) comes from the file name.
+  // If the class does not exist yet, it is created. Students already in the class are skipped.
+  async function importClassList({ subjectName: name, classSection: section, students: rows }) {
+    const same = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase()
+
+    // 1. Find the class, or create it
+    const mine = await teacherService.getSubjects(teacherId)
+    let subject = mine.find((s) => same(s.subjectName, name) && same(s.classSection, section))
+    const created = !subject
+    if (created) {
+      try {
+        subject = await teacherService.createSubject({ subjectName: name, classSection: section, teacherId })
+      } catch (e) {
+        if (e.status === 0 || e.status === 401 || e.status === 403) throw e
+        throw new Error(`Could not create the class ${name} – ${section}.`, { cause: e })
+      }
+    }
+
+    // 2. Students who are already in this class are skipped
+    const known = new Set((await teacherService.getClassList(subject)).map((c) => c.studentId))
     const fresh = []
     rows.forEach((row) => {
       if (known.has(row.id)) return
@@ -120,22 +136,35 @@ export function useTeacherData() {
       fresh.push(row)
     })
     const skipped = rows.length - fresh.length
-    if (fresh.length === 0) return { imported: 0, skipped, failed: [] }
 
+    // 3. Add the new students
     let failed = []
-    try {
-      await teacherService.bulkImportClassList(subject, fresh)
-    } catch (e) {
-      if (e.status === 0 || e.status === 401 || e.status === 403) throw e
-      // The bulk import is all or nothing, so add the students one by one to find the ones that fail
-      const results = await Promise.allSettled(
-        fresh.map((student) => teacherService.addClassListStudent(subject, student))
-      )
-      failed = fresh.filter((_, i) => results[i].status === 'rejected').map((s) => s.id)
+    if (fresh.length > 0) {
+      try {
+        await teacherService.bulkImportClassList(subject, fresh)
+      } catch (e) {
+        if (e.status === 0 || e.status === 401) throw e
+        // The bulk import is all or nothing, so add the students one by one to find the ones that fail
+        const results = await Promise.allSettled(
+          fresh.map((student) => teacherService.addClassListStudent(subject, student))
+        )
+        failed = fresh.filter((_, i) => results[i].status === 'rejected').map((s) => s.id)
+      }
     }
 
-    refresh()
-    return { imported: fresh.length - failed.length, skipped, failed }
+    // 4. Show this class everywhere. Its data is only seen when this class is selected.
+    const latest = await teacherService.getSubjects(teacherId)
+    setSubjects(latest.map((s) => ({ ...s, label: `${s.subjectName} – ${s.classSection}` })))
+    setSelectedId(subject.id)
+    setReloadCount((n) => n + 1)
+
+    return {
+      label: `${subject.subjectName} – ${subject.classSection}`,
+      created,
+      imported: fresh.length - failed.length,
+      skipped,
+      failed,
+    }
   }
 
   // Saves the changed learning outcomes and max scores of the chosen subject
@@ -167,13 +196,29 @@ export function useTeacherData() {
     return { changed: changed.length, saved: toSave.length - rejected, failed }
   }
 
-  // Saves a score. If the student already has a score for that assessment item, it is replaced.
-  async function addActivity({ studentId, assessment, score }) {
-    const existing = scores.find((r) => r.studentId === studentId && r.assessment === assessment)
-    const body = { activityName: assessment, studentId, score: Number(score), subjectName, classSection }
+  // Adds a new activity (an assessment item) to the chosen subject.
+  // Its learning outcome and max score can be set in Subject Mapping.
+  async function addActivity(name) {
+    const subject = { subjectName, classSection }
+    await teacherService.createAssessment(
+      { name: name.trim(), outcome: 'Not set yet', maxScore: 100 },
+      subject
+    )
+    refresh()
+  }
 
-    if (existing) await teacherService.updateActivity(existing.id, body)
-    else await teacherService.createActivity(body)
+  // Saves one score typed into the Students grid.
+  // A score of null removes the score.
+  async function saveScore({ studentId, assessment, score }) {
+    const existing = scores.find((r) => r.studentId === studentId && r.assessment === assessment)
+
+    if (score === null) {
+      if (existing) await teacherService.deleteActivity(existing.id)
+    } else {
+      const body = { activityName: assessment, studentId, score, subjectName, classSection }
+      if (existing) await teacherService.updateActivity(existing.id, body)
+      else await teacherService.createActivity(body)
+    }
     refresh()
   }
 
@@ -189,8 +234,9 @@ export function useTeacherData() {
     scores,
     selectSubject,
     retry,
-    importStudents,
+    importClassList,
     saveMapping,
     addActivity,
+    saveScore,
   }
 }
