@@ -27,7 +27,7 @@ function renderPage(page, { onNavigate, userName, teacherData }) {
     case 'Subject Mapping':
       return <SubjectMappingPage data={teacherData} />
     case 'Learning Gaps':
-      return <LearningGapsPage />
+      return <LearningGapsPage data={teacherData} />
     case 'Students':
       return <StudentsPage data={teacherData} />
     case 'Support':
