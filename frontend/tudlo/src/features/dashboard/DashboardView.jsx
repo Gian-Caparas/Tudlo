@@ -1,12 +1,12 @@
 import { PageHeader } from '@/components/shared/PageHeader.jsx'
+import { DataGate } from '@/components/shared/DataGate.jsx'
 import { Badge } from '@/components/ui/Badge.jsx'
 import { Avatar } from '@/components/ui/Avatar.jsx'
 import { Icon } from '@/components/ui/Icon.jsx'
 import { LineChart } from '@/components/ui/LineChart.jsx'
-import { classInfo, rules, subjects, assessmentNames } from '@/mockdata/mockData.js'
-import { average, getPercent, getNeedsSupport } from '@/utils/scoring.js'
+import { rules, average, getPercent, getNeedsSupport } from '@/utils/scoring.js'
 
-// ---------- helpers: everything on the page is calculated from the data ----------
+// ---------- helpers: everything on the page is calculated from the backend data ----------
 
 function getGreeting() {
   const hour = new Date().getHours()
@@ -15,60 +15,42 @@ function getGreeting() {
   return 'Good evening'
 }
 
-// Class average % for each assessment (all subjects together). Only assessments that have scores.
-function getPerformance(scores, mapping) {
-  return assessmentNames
-    .map((name) => {
+// Class average % of each assessment item, in the order of Subject Mapping
+function getPerformance(items, scores) {
+  return items
+    .map((item) => {
       const percents = scores
-        .filter((r) => r.assessment === name)
-        .map((r) => getPercent(r, mapping))
+        .filter((r) => r.assessment === item.name)
+        .map((r) => getPercent(r, items))
         .filter((p) => p !== null)
-      return { name, percent: Math.round(average(percents)), count: percents.length }
+      return { name: item.name, outcome: item.outcome, percent: Math.round(average(percents)), count: percents.length }
     })
-    .filter((item) => item.count > 0)
+    .filter((row) => row.count > 0)
 }
 
-function getStats(scores, students, mapping, performance) {
+function getStats(items, scores, students, performance) {
   const percentsOf = (studentId) =>
     scores
       .filter((r) => r.studentId === studentId)
-      .map((r) => getPercent(r, mapping))
+      .map((r) => getPercent(r, items))
       .filter((p) => p !== null)
 
-  const allPercents = scores.map((r) => getPercent(r, mapping)).filter((p) => p !== null)
+  const allPercents = scores.map((r) => getPercent(r, items)).filter((p) => p !== null)
   const scoredStudents = students.filter((s) => percentsOf(s.id).length > 0)
   const passed = scoredStudents.filter((s) => average(percentsOf(s.id)) >= rules.passMark).length
-
-  // every student should have a score for every assessment of every subject that has scores
-  const subjectsWithScores = new Set(scores.map((r) => r.subject)).size
-  const expected = students.length * subjectsWithScores * assessmentNames.length
+  const expected = students.length * items.length // every student should have a score for every item
 
   const last = performance[performance.length - 1]
   const before = performance[performance.length - 2]
 
   return {
-    classAverage: `${average(allPercents).toFixed(1)}%`,
-    passRate: `${scoredStudents.length ? Math.round((passed / scoredStudents.length) * 100) : 0}%`,
+    classAverage: allPercents.length ? `${average(allPercents).toFixed(1)}%` : '—',
+    passRate: scoredStudents.length ? `${Math.round((passed / scoredStudents.length) * 100)}%` : '—',
     passDetail: `${passed} of ${scoredStudents.length}`,
-    completion: `${expected ? Math.round((allPercents.length / expected) * 100) : 0}%`,
+    completion: expected ? `${Math.round((allPercents.length / expected) * 100)}%` : '—',
     completionDetail: `${allPercents.length} of ${expected}`,
     change: last && before ? last.percent - before.percent : 0,
   }
-}
-
-// The subject with the lowest class average
-function getLowestSubject(scores, mapping) {
-  let lowest = null
-  subjects.forEach((name) => {
-    const percents = scores
-      .filter((r) => r.subject === name)
-      .map((r) => getPercent(r, mapping))
-      .filter((p) => p !== null)
-    if (percents.length === 0) return
-    const percent = Math.round(average(percents))
-    if (lowest === null || percent < lowest.percent) lowest = { name, percent }
-  })
-  return lowest
 }
 
 // ---------- small components ----------
@@ -119,21 +101,16 @@ function SupportRow({ student, onOpen }) {
 
 // ---------- the page ----------
 
-export function DashboardView({ scores, students, mapping, userName, onNavigate }) {
-  const performance = getPerformance(scores, mapping)
-  const stats = getStats(scores, students, mapping, performance)
-  const needsSupport = getNeedsSupport(scores, students, mapping)
-  const lowestSubject = getLowestSubject(scores, mapping)
+function DashboardBody({ data, onNavigate }) {
+  const { items, scores, students } = data
+  const performance = getPerformance(items, scores)
+  const stats = getStats(items, scores, students, performance)
+  const needsSupport = getNeedsSupport(scores, students, items)
+  const lowest = performance.reduce((low, row) => (low === null || row.percent < low.percent ? row : low), null)
   const trendingUp = stats.change >= 0
 
   return (
-    <div>
-      <PageHeader
-        eyebrow={classInfo.code}
-        title={`${getGreeting()}, ${userName}`}
-        description="Here's where your class stands today, and who may need your attention."
-      />
-
+    <>
       <section className="kpi-grid">
         <StatCard
           label="Class average"
@@ -147,7 +124,7 @@ export function DashboardView({ scores, students, mapping, userName, onNavigate 
         <StatCard
           label="Students needing support"
           value={needsSupport.length}
-          note={`Below ${rules.supportThreshold}% or overdue`}
+          note={`Below ${rules.supportThreshold}%`}
           icon="heart"
           attention
         />
@@ -158,9 +135,11 @@ export function DashboardView({ scores, students, mapping, userName, onNavigate 
           title="Class performance"
           subtitle="Average score by assessment"
           badge={
-            <Badge tone={trendingUp ? 'success' : 'warning'}>
-              {trendingUp ? 'Trending Up' : 'Trending Down'}
-            </Badge>
+            performance.length > 1 && (
+              <Badge tone={trendingUp ? 'success' : 'warning'}>
+                {trendingUp ? 'Trending Up' : 'Trending Down'}
+              </Badge>
+            )
           }
           className="chart-card"
         >
@@ -170,7 +149,7 @@ export function DashboardView({ scores, students, mapping, userName, onNavigate 
               labels={performance.map((p) => p.name)}
             />
           ) : (
-            <p>No scores yet.</p>
+            <p>No scores yet for this subject.</p>
           )}
         </SectionCard>
 
@@ -186,19 +165,34 @@ export function DashboardView({ scores, students, mapping, userName, onNavigate 
         </SectionCard>
       </div>
 
-      {lowestSubject && (
+      {lowest && (
         <section className="insight-banner">
           <span className="insight-mark">i</span>
           <div>
             <strong>Insight worth noticing</strong>
             <p>
-              {lowestSubject.name} is the lowest-performing subject across the class at {lowestSubject.percent}%.
-              Consider revisiting it before the next assessment.
+              {lowest.name} is the lowest-scoring assessment in {data.classLabel} at {lowest.percent}%.
+              {lowest.outcome && ` Consider revisiting: ${lowest.outcome}`}
             </p>
           </div>
           <button onClick={() => onNavigate('Learning Gaps')}>View learning gaps →</button>
         </section>
       )}
+    </>
+  )
+}
+
+export function DashboardView({ data, userName, onNavigate }) {
+  return (
+    <div>
+      <PageHeader
+        eyebrow={data.classLabel}
+        title={`${getGreeting()}, ${userName}`}
+        description="Here's where your class stands today, and who may need your attention."
+      />
+      <DataGate data={data}>
+        <DashboardBody data={data} onNavigate={onNavigate} />
+      </DataGate>
     </div>
   )
 }
