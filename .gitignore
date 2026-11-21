@@ -1,3 +1,5 @@
 backend/.postman/
 backend/postman/
+/e2e-tests/
+/sample-classlists/
 .vscode/
