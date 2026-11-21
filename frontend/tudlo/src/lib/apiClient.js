@@ -40,7 +40,9 @@ export async function apiRequest(path, options = {}) {
     }
     const message = response.status === 403
       ? 'You are not allowed to perform this action.'
-      : body?.message || (response.status === 401 ? 'Invalid user ID number or password.' : 'The request failed.')
+      : response.status === 401 && !isLogin
+        ? 'Your session expired. Please sign in again.'
+        : body?.message || (response.status === 401 ? 'Invalid user ID number or password.' : 'The request failed.')
     throw new ApiError(response.status, message, body)
   }
   return body
