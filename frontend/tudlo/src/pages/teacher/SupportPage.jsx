@@ -2,44 +2,31 @@ import { PageHeader } from '@/components/shared/PageHeader.jsx'
 import { SubjectSelect } from '@/components/shared/SubjectSelect.jsx'
 import { DataGate } from '@/components/shared/DataGate.jsx'
 import { Badge } from '@/components/ui/Badge.jsx'
-import { academicService } from '@/services/academicService.js'
+import { Avatar } from '@/components/ui/Avatar.jsx'
+import { Icon } from '@/components/ui/Icon.jsx'
+import { rules, getOverallStudentScore } from '@/utils/scoring.js'
 
-export default function SupportPage() {
-  const [history, setHistory] = useState([])
-  const [error, setError] = useState('')
-  const [form, setForm] = useState({
-    enrollmentId: '',
-    type: '',
-    notes: '',
-    activityDate: new Date().toISOString().slice(0, 10),
-  })
+function getSeverity(percent) {
+  if (percent < 40) return { label: 'Critical', tone: 'danger' }
+  if (percent < 50) return { label: 'High Priority', tone: 'danger' }
+  if (percent < 60) return { label: 'Moderate', tone: 'warning' }
+  return { label: 'On Track', tone: 'success' }
+}
 
-  useEffect(() => {
-    let active = true
-    academicService.getSupportHistory()
-      .then((items) => active && setHistory(items))
-      .catch((requestError) => active && setError(requestError.message))
-    return () => { active = false }
-  }, [])
+function SupportBody({ data, onNavigate }) {
+  const { students, items, scores } = data
 
-  async function submit(event) {
-    event.preventDefault()
-    setError('')
-    try {
-      await academicService.recordSupport({
-        teacherId: 0,
-        enrollmentId: Number(form.enrollmentId),
-        type: form.type,
-        notes: form.notes,
-        activityDate: form.activityDate,
-      })
-      const items = await academicService.getSupportHistory()
-      setHistory(items)
-      setForm((current) => ({ ...current, enrollmentId: '', type: '', notes: '' }))
-    } catch (requestError) {
-      setError(requestError.message)
-    }
-  }
+  const scoredStudents = students
+    .map((s) => ({
+      ...s,
+      overall: getOverallStudentScore(s.id, scores, items),
+    }))
+    .filter((s) => s.overall !== null)
+
+  const passingStudents = scoredStudents.filter((s) => s.overall.percent >= rules.passMark)
+  const atRiskStudents = scoredStudents
+    .filter((s) => s.overall.percent < rules.supportThreshold)
+    .sort((a, b) => a.overall.percent - b.overall.percent)
 
   return (
     <>
