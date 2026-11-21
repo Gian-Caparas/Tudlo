@@ -4,9 +4,14 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "learning_gap", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"student_id", "subject_name", "class_section"})
+    @UniqueConstraint(
+        name = "uk_learning_gap_offering_student",
+        columnNames = {"offering_id", "student_id"}
+    )
 })
 @Getter
 @Setter
@@ -17,14 +22,13 @@ public class LearningGap {
     @Column(name = "learning_gap_id")
     private Long id;
 
-    @Column(name = "student_id", nullable = false, length = 20)
-    private String studentId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "offering_id", nullable = false)
+    private SubjectOffering offering;
 
-    @Column(name = "subject_name", nullable = false, length = 150)
-    private String subjectName;
-
-    @Column(name = "class_section", nullable = false, length = 50)
-    private String classSection;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "student_id", referencedColumnName = "Student_ID", nullable = false)
+    private Student student;
 
     @Column(name = "overall_score", nullable = false)
     private Double overallScore;
@@ -32,35 +36,22 @@ public class LearningGap {
     @Column(name = "max_possible_score", nullable = false)
     private Double maxPossibleScore;
 
-    @Column(name = "percentage", nullable = false)
+    @Column(name = "percentage")
     private Double percentage;
 
     @Column(name = "is_at_risk", nullable = false)
     private Boolean isAtRisk;
 
     @Column(name = "gap_severity", length = 20)
-    private String gapSeverity; // "CRITICAL", "HIGH", "MODERATE", "LOW"
+    private String gapSeverity; // "CRITICAL", "HIGH", "MODERATE", "LOW", "UNKNOWN"
 
     @Column(name = "last_calculated")
-    private java.time.LocalDateTime lastCalculated;
+    private LocalDateTime lastCalculated;
 
-    // Optional: link to User for student details
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id", referencedColumnName = "user_id_number", insertable = false, updatable = false)
-    private User student;
-
-    // Optional: link to Subject for subject details
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-        @JoinColumn(name = "subject_name", referencedColumnName = "subject_name", insertable = false, updatable = false),
-        @JoinColumn(name = "class_section", referencedColumnName = "class_section", insertable = false, updatable = false)
-    })
-    private Subject subject;
-
-    // Helper method to determine gap severity based on percentage
     public void calculateGapSeverity() {
         if (percentage == null) {
             this.gapSeverity = "UNKNOWN";
+            this.isAtRisk = false;
             return;
         }
         if (percentage < 40) {
@@ -72,6 +63,6 @@ public class LearningGap {
         } else {
             this.gapSeverity = "LOW";
         }
-        this.isAtRisk = percentage < 60;
+        this.isAtRisk = percentage < 60.0;
     }
 }

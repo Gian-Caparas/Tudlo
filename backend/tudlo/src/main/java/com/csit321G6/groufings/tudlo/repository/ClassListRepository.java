@@ -1,21 +1,41 @@
 package com.csit321G6.groufings.tudlo.repository;
 
 import com.csit321G6.groufings.tudlo.entity.ClassList;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ClassListRepository extends JpaRepository<ClassList, Long> {
 
-    List<ClassList> findBySubjectNameAndClassSection(String subjectName, String classSection);
+    @Override
+    @EntityGraph(attributePaths = {"student", "offering", "offering.subject", "offering.section", "offering.teacher", "offering.teacher.user"})
+    List<ClassList> findAll();
 
-    List<ClassList> findByStudentId(String studentId);
+    @Override
+    @EntityGraph(attributePaths = {"student", "offering", "offering.subject", "offering.section", "offering.teacher", "offering.teacher.user"})
+    Optional<ClassList> findById(Long id);
 
-    @Query("SELECT cl FROM ClassList cl WHERE cl.subjectName = :subjectName AND cl.classSection = :classSection")
-    List<ClassList> findBySubjectAndSection(@Param("subjectName") String subjectName, @Param("classSection") String classSection);
+    @EntityGraph(attributePaths = {"student", "offering", "offering.subject", "offering.section", "offering.teacher", "offering.teacher.user"})
+    List<ClassList> findByOfferingId(Long offeringId);
 
-    boolean existsBySubjectNameAndClassSectionAndStudentId(String subjectName, String classSection, String studentId);
+    @EntityGraph(attributePaths = {"student", "offering", "offering.subject", "offering.section", "offering.teacher", "offering.teacher.user"})
+    List<ClassList> findByStudentStudentId(String studentId);
+
+    @EntityGraph(attributePaths = {"student", "offering", "offering.subject", "offering.section", "offering.teacher", "offering.teacher.user"})
+    List<ClassList> findByOfferingTeacherId(Long teacherId);
+
+    @EntityGraph(attributePaths = {"student", "offering", "offering.subject", "offering.section", "offering.teacher", "offering.teacher.user"})
+    List<ClassList> findByOfferingSubjectSubjectNameIgnoreCaseAndOfferingSectionSectionNameIgnoreCase(
+            String subjectName, String sectionName);
+
+    Optional<ClassList> findByOfferingIdAndStudentStudentId(Long offeringId, String studentId);
+
+    boolean existsByOfferingIdAndStudentStudentId(Long offeringId, String studentId);
+
+    boolean existsByOfferingSubjectSubjectNameIgnoreCaseAndOfferingSectionSectionNameIgnoreCaseAndStudentStudentId(
+            String subjectName, String sectionName, String studentId);
 }

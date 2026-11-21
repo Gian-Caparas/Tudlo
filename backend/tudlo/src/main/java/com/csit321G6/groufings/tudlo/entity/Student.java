@@ -3,19 +3,47 @@ package com.csit321G6.groufings.tudlo.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.domain.Persistable;
 
 @Entity
 @Table(name = "student")
 @Getter
 @Setter
-public class Student {
+public class Student implements Persistable<String> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "student_id")
-    private Long id;
+    @Column(name = "Student_ID", nullable = false, length = 20)
+    private String studentId;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private User user;
+    @Column(name = "Firstname", nullable = false, length = 100)
+    private String firstName;
+
+    @Column(name = "Lastname", nullable = false, length = 100)
+    private String lastName;
+
+    @Transient
+    private boolean isNew = true;
+
+    @PostLoad
+    @PostPersist
+    void markNotNew() {
+        this.isNew = false;
+    }
+
+    @Override
+    @Transient
+    public String getId() {
+        return studentId;
+    }
+
+    @Override
+    @Transient
+    public boolean isNew() {
+        return isNew;
+    }
+
+    @Transient
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
 }

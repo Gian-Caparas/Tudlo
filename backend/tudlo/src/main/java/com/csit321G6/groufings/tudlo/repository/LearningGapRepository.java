@@ -1,31 +1,46 @@
 package com.csit321G6.groufings.tudlo.repository;
 
 import com.csit321G6.groufings.tudlo.entity.LearningGap;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface LearningGapRepository extends JpaRepository<LearningGap, Long> {
 
-    List<LearningGap> findBySubjectNameAndClassSection(String subjectName, String classSection);
+    @EntityGraph(attributePaths = {"student", "offering", "offering.subject", "offering.section", "offering.teacher", "offering.teacher.user"})
+    List<LearningGap> findByOfferingId(Long offeringId);
 
-    List<LearningGap> findByStudentId(String studentId);
+    @EntityGraph(attributePaths = {"student", "offering", "offering.subject", "offering.section", "offering.teacher", "offering.teacher.user"})
+    List<LearningGap> findByStudentStudentId(String studentId);
 
-    List<LearningGap> findByIsAtRiskTrue();
+    Optional<LearningGap> findByOfferingIdAndStudentStudentId(Long offeringId, String studentId);
 
-    List<LearningGap> findBySubjectNameAndClassSectionAndIsAtRiskTrue(String subjectName, String classSection);
+    @EntityGraph(attributePaths = {"student", "offering", "offering.subject", "offering.section", "offering.teacher", "offering.teacher.user"})
+    List<LearningGap> findByOfferingIdAndPercentageIsNotNullAndPercentageLessThanOrderByPercentageAsc(
+            Long offeringId, Double threshold);
 
-    @Query("SELECT lg FROM LearningGap lg WHERE lg.subjectName = :subjectName AND lg.classSection = :classSection AND lg.isAtRisk = true ORDER BY lg.percentage ASC")
-    List<LearningGap> findAtRiskStudentsOrderByPercentage(@Param("subjectName") String subjectName, @Param("classSection") String classSection);
+    @Query("SELECT lg FROM LearningGap lg " +
+           "JOIN FETCH lg.student " +
+           "JOIN FETCH lg.offering o " +
+           "JOIN FETCH o.subject " +
+           "JOIN FETCH o.section " +
+           "JOIN FETCH o.teacher t " +
+           "JOIN FETCH t.user " +
+           "WHERE o.teacher.id = :teacherId AND lg.percentage IS NOT NULL AND lg.percentage < 60.0 " +
+           "ORDER BY lg.percentage ASC")
+    List<LearningGap> findAtRiskByTeacherId(@Param("teacherId") Long teacherId);
 
-    @Query("SELECT lg FROM LearningGap lg WHERE lg.gapSeverity = :severity")
-    List<LearningGap> findByGapSeverity(@Param("severity") String severity);
+    @EntityGraph(attributePaths = {"student", "offering", "offering.subject", "offering.section", "offering.teacher", "offering.teacher.user"})
+    List<LearningGap> findByOfferingSubjectSubjectNameIgnoreCaseAndOfferingSectionSectionNameIgnoreCase(
+            String subjectName, String sectionName);
 
-    Optional<LearningGap> findByStudentIdAndSubjectNameAndClassSection(String studentId, String subjectName, String classSection);
-
-    boolean existsByStudentIdAndSubjectNameAndClassSection(String studentId, String subjectName, String classSection);
+    @EntityGraph(attributePaths = {"student", "offering", "offering.subject", "offering.section", "offering.teacher", "offering.teacher.user"})
+    List<LearningGap> findByOfferingSubjectSubjectNameIgnoreCaseAndOfferingSectionSectionNameIgnoreCaseAndPercentageIsNotNullAndPercentageLessThanOrderByPercentageAsc(
+            String subjectName, String sectionName, Double threshold);
 }

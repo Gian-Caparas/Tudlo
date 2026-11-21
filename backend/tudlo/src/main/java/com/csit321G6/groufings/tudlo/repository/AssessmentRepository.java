@@ -1,22 +1,37 @@
 package com.csit321G6.groufings.tudlo.repository;
 
 import com.csit321G6.groufings.tudlo.entity.Assessment;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface AssessmentRepository extends JpaRepository<Assessment, Long> {
 
-    List<Assessment> findBySubjectNameAndClassSection(String subjectName, String classSection);
+    @Override
+    @EntityGraph(attributePaths = {"offering", "offering.subject", "offering.section", "offering.teacher", "offering.teacher.user"})
+    List<Assessment> findAll();
 
-    Optional<Assessment> findByAssessmentItemAndSubjectNameAndClassSection(String assessmentItem, String subjectName, String classSection);
+    @Override
+    @EntityGraph(attributePaths = {"offering", "offering.subject", "offering.section", "offering.teacher", "offering.teacher.user"})
+    Optional<Assessment> findById(Long id);
 
-    @Query("SELECT a FROM Assessment a WHERE a.subjectName = :subjectName AND a.classSection = :classSection")
-    List<Assessment> findBySubjectAndSection(@Param("subjectName") String subjectName, @Param("classSection") String classSection);
+    @EntityGraph(attributePaths = {"offering", "offering.subject", "offering.section", "offering.teacher", "offering.teacher.user"})
+    List<Assessment> findByOfferingId(Long offeringId);
 
-    boolean existsByAssessmentItemAndSubjectNameAndClassSection(String assessmentItem, String subjectName, String classSection);
+    @EntityGraph(attributePaths = {"offering", "offering.subject", "offering.section", "offering.teacher", "offering.teacher.user"})
+    List<Assessment> findByOfferingTeacherId(Long teacherId);
+
+    @EntityGraph(attributePaths = {"offering", "offering.subject", "offering.section", "offering.teacher", "offering.teacher.user"})
+    List<Assessment> findByOfferingSubjectSubjectNameIgnoreCaseAndOfferingSectionSectionNameIgnoreCase(
+            String subjectName, String sectionName);
+
+    Optional<Assessment> findByOfferingIdAndAssessmentItemIgnoreCase(Long offeringId, String assessmentItem);
+
+    boolean existsByOfferingIdAndAssessmentItemIgnoreCase(Long offeringId, String assessmentItem);
+
+    long countByOfferingId(Long offeringId);
 }

@@ -1,28 +1,48 @@
 package com.csit321G6.groufings.tudlo.repository;
 
 import com.csit321G6.groufings.tudlo.entity.Activity;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ActivityRepository extends JpaRepository<Activity, Long> {
 
-    List<Activity> findByStudentId(String studentId);
+    @Override
+    @EntityGraph(attributePaths = {"student", "assessment", "assessment.offering", "assessment.offering.subject", "assessment.offering.section", "assessment.offering.teacher", "assessment.offering.teacher.user"})
+    List<Activity> findAll();
 
-    List<Activity> findBySubjectNameAndClassSection(String subjectName, String classSection);
+    @Override
+    @EntityGraph(attributePaths = {"student", "assessment", "assessment.offering", "assessment.offering.subject", "assessment.offering.section", "assessment.offering.teacher", "assessment.offering.teacher.user"})
+    Optional<Activity> findById(Long id);
 
-    List<Activity> findByStudentIdAndSubjectNameAndClassSection(String studentId, String subjectName, String classSection);
+    @EntityGraph(attributePaths = {"student", "assessment", "assessment.offering", "assessment.offering.subject", "assessment.offering.section", "assessment.offering.teacher", "assessment.offering.teacher.user"})
+    List<Activity> findByStudentStudentId(String studentId);
 
-    Optional<Activity> findByActivityNameAndStudentIdAndSubjectNameAndClassSection(
-            String activityName, String studentId, String subjectName, String classSection);
+    @EntityGraph(attributePaths = {"student", "assessment", "assessment.offering", "assessment.offering.subject", "assessment.offering.section", "assessment.offering.teacher", "assessment.offering.teacher.user"})
+    List<Activity> findByAssessmentId(Long assessmentId);
 
-    @Query("SELECT a FROM Activity a WHERE a.studentId = :studentId AND a.subjectName = :subjectName AND a.classSection = :classSection")
-    List<Activity> findByStudentSubjectAndSection(@Param("studentId") String studentId, @Param("subjectName") String subjectName, @Param("classSection") String classSection);
+    @EntityGraph(attributePaths = {"student", "assessment", "assessment.offering", "assessment.offering.subject", "assessment.offering.section", "assessment.offering.teacher", "assessment.offering.teacher.user"})
+    List<Activity> findByAssessmentOfferingId(Long offeringId);
 
-    boolean existsByActivityNameAndStudentIdAndSubjectNameAndClassSection(
-            String activityName, String studentId, String subjectName, String classSection);
+    @EntityGraph(attributePaths = {"student", "assessment", "assessment.offering", "assessment.offering.subject", "assessment.offering.section", "assessment.offering.teacher", "assessment.offering.teacher.user"})
+    List<Activity> findByAssessmentOfferingTeacherId(Long teacherId);
+
+    @EntityGraph(attributePaths = {"student", "assessment", "assessment.offering", "assessment.offering.subject", "assessment.offering.section", "assessment.offering.teacher", "assessment.offering.teacher.user"})
+    List<Activity> findByStudentStudentIdAndAssessmentOfferingId(String studentId, Long offeringId);
+
+    @EntityGraph(attributePaths = {"student", "assessment", "assessment.offering", "assessment.offering.subject", "assessment.offering.section", "assessment.offering.teacher", "assessment.offering.teacher.user"})
+    List<Activity> findByAssessmentOfferingSubjectSubjectNameIgnoreCaseAndAssessmentOfferingSectionSectionNameIgnoreCase(
+            String subjectName, String sectionName);
+
+    @EntityGraph(attributePaths = {"student", "assessment", "assessment.offering", "assessment.offering.subject", "assessment.offering.section", "assessment.offering.teacher", "assessment.offering.teacher.user"})
+    List<Activity> findByStudentStudentIdAndAssessmentOfferingSubjectSubjectNameIgnoreCaseAndAssessmentOfferingSectionSectionNameIgnoreCase(
+            String studentId, String subjectName, String sectionName);
+
+    Optional<Activity> findByAssessmentIdAndStudentStudentId(Long assessmentId, String studentId);
+
+    boolean existsByAssessmentIdAndStudentStudentId(Long assessmentId, String studentId);
 }

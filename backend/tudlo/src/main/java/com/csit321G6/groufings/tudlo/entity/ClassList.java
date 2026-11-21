@@ -6,7 +6,10 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "class_list", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"subject_name", "class_section", "student_id"})
+    @UniqueConstraint(
+        name = "uk_class_list_offering_student",
+        columnNames = {"offering_id", "student_id"}
+    )
 })
 @Getter
 @Setter
@@ -17,23 +20,11 @@ public class ClassList {
     @Column(name = "class_list_id")
     private Long id;
 
-    @Column(name = "subject_name", nullable = false, length = 150)
-    private String subjectName;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "offering_id", nullable = false)
+    private SubjectOffering offering;
 
-    @Column(name = "class_section", nullable = false, length = 50)
-    private String classSection;
-
-    @Column(name = "student_id", nullable = false, length = 20)
-    private String studentId;
-
-    @Column(name = "first_name", nullable = false, length = 150)
-    private String firstName;
-
-    @Column(name = "last_name", nullable = false, length = 150)
-    private String lastName;
-
-    // Optional: link to User entity for referential integrity
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id", referencedColumnName = "user_id_number", insertable = false, updatable = false)
-    private User student;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "student_id", referencedColumnName = "Student_ID", nullable = false)
+    private Student student;
 }

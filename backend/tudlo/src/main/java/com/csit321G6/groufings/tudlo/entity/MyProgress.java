@@ -4,9 +4,14 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "my_progress", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"student_id", "subject_name", "class_section"})
+    @UniqueConstraint(
+        name = "uk_my_progress_offering_student",
+        columnNames = {"offering_id", "student_id"}
+    )
 })
 @Getter
 @Setter
@@ -17,19 +22,18 @@ public class MyProgress {
     @Column(name = "progress_id")
     private Long id;
 
-    @Column(name = "student_id", nullable = false, length = 20)
-    private String studentId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "offering_id", nullable = false)
+    private SubjectOffering offering;
 
-    @Column(name = "subject_name", nullable = false, length = 150)
-    private String subjectName;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "student_id", referencedColumnName = "Student_ID", nullable = false)
+    private Student student;
 
-    @Column(name = "class_section", nullable = false, length = 50)
-    private String classSection;
-
-    @Column(name = "subject_average", nullable = false)
+    @Column(name = "subject_average")
     private Double subjectAverage;
 
-    @Column(name = "overall_grade", nullable = false)
+    @Column(name = "overall_grade")
     private Double overallGrade;
 
     @Column(name = "total_assessments")
@@ -39,18 +43,5 @@ public class MyProgress {
     private Integer completedAssessments;
 
     @Column(name = "last_updated")
-    private java.time.LocalDateTime lastUpdated;
-
-    // Optional: link to User for student details
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id", referencedColumnName = "user_id_number", insertable = false, updatable = false)
-    private User student;
-
-    // Optional: link to Subject for subject details
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-        @JoinColumn(name = "subject_name", referencedColumnName = "subject_name", insertable = false, updatable = false),
-        @JoinColumn(name = "class_section", referencedColumnName = "class_section", insertable = false, updatable = false)
-    })
-    private Subject subject;
+    private LocalDateTime lastUpdated;
 }
