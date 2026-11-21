@@ -4,10 +4,13 @@ import com.csit321G6.groufings.tudlo.common.CrudService;
 import com.csit321G6.groufings.tudlo.dto.ClassListDto;
 import com.csit321G6.groufings.tudlo.entity.ClassList;
 import com.csit321G6.groufings.tudlo.entity.User;
+import com.csit321G6.groufings.tudlo.entity.UserType;
 import com.csit321G6.groufings.tudlo.repository.ClassListRepository;
 import com.csit321G6.groufings.tudlo.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,10 +20,15 @@ public class ClassListService extends CrudService<ClassList, ClassListDto.Reques
 
     private final ClassListRepository classListRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
 
-    public ClassListService(ClassListRepository classListRepository, UserRepository userRepository) {
+    public ClassListService(
+            ClassListRepository classListRepository,
+            UserRepository userRepository,
+            UserService userService) {
         this.classListRepository = classListRepository;
         this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     @Override
@@ -45,6 +53,23 @@ public class ClassListService extends CrudService<ClassList, ClassListDto.Reques
         entity.setStudentId(request.studentId());
         entity.setFirstName(request.firstName());
         entity.setLastName(request.lastName());
+    }
+
+    @Override
+    protected void beforeCreate(ClassList entity, ClassListDto.Request request) {
+        User student = userRepository.findByUserIdNumber(request.studentId())
+                .orElseGet(() -> userService.registerStudent(
+                        request.firstName(),
+                        request.lastName(),
+                        request.studentId(),
+                        null
+                ));
+        if (student.getUserType() != UserType.STUDENT) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "User ID " + request.studentId() + " already belongs to a non-student account"
+            );
+        }
     }
 
     @Override
