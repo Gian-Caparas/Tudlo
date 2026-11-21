@@ -18,11 +18,13 @@ public final class UserDto {
             @NotBlank(message = "Last name is required")
             @Size(max = 150)
             String lastName,
-            @NotBlank(message = "Password is required")
             @Size(min = 8, max = 72, message = "Password must be between 8 and 72 characters")
             String password,
             @NotNull(message = "User type is required")
-            UserType userType
+            UserType userType,
+            // Optional: only used by Admin when creating users with specific ID numbers
+            @Size(max = 20)
+            String userIdNumber
     ) {
     }
 

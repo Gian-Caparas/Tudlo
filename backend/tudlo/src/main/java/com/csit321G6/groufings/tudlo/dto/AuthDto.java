@@ -1,7 +1,9 @@
 package com.csit321G6.groufings.tudlo.dto;
 
+import com.csit321G6.groufings.tudlo.entity.UserType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
 import java.time.LocalDateTime;
 
 public class AuthDto {
@@ -21,17 +23,21 @@ public class AuthDto {
             String tokenType,
             long expiresInMs,
             Long id,
+            Object profileId,
             String userType,
             String fullName,
+            String firstName,
+            String lastName,
             String userIdNumber
     ) {}
 
     public record MeResponse(
             Long id,
+            Object profileId,
             String firstName,
             String lastName,
             String userIdNumber,
-            com.csit321G6.groufings.tudlo.entity.UserType userType,
+            UserType userType,
             LocalDateTime createdAt
     ) {}
 }
