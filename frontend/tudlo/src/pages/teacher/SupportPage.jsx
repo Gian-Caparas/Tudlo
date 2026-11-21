@@ -1,112 +1,209 @@
-import { useEffect, useState } from 'react'
 import { PageHeader } from '@/components/shared/PageHeader.jsx'
+import { SubjectSelect } from '@/components/shared/SubjectSelect.jsx'
+import { DataGate } from '@/components/shared/DataGate.jsx'
 import { Badge } from '@/components/ui/Badge.jsx'
-import { academicService } from '@/services/academicService.js'
+import { Avatar } from '@/components/ui/Avatar.jsx'
+import { Icon } from '@/components/ui/Icon.jsx'
+import { rules, getOverallStudentScore } from '@/utils/scoring.js'
 
-export default function SupportPage() {
-  const [history, setHistory] = useState([])
-  const [error, setError] = useState('')
-  const [form, setForm] = useState({
-    enrollmentId: '',
-    type: '',
-    notes: '',
-    activityDate: new Date().toISOString().slice(0, 10),
-  })
+function getSeverity(percent) {
+  if (percent < 40) return { label: 'Critical', tone: 'danger' }
+  if (percent < 50) return { label: 'High Priority', tone: 'danger' }
+  if (percent < 60) return { label: 'Moderate', tone: 'warning' }
+  return { label: 'On Track', tone: 'success' }
+}
 
-  useEffect(() => {
-    let active = true
-    academicService.getSupportHistory()
-      .then((items) => active && setHistory(items))
-      .catch((requestError) => active && setError(requestError.message))
-    return () => { active = false }
-  }, [])
+function SupportBody({ data, onNavigate }) {
+  const { students, items, scores } = data
 
-  async function submit(event) {
-    event.preventDefault()
-    setError('')
-    try {
-      await academicService.recordSupport({
-        teacherId: 0,
-        enrollmentId: Number(form.enrollmentId),
-        type: form.type,
-        notes: form.notes,
-        activityDate: form.activityDate,
-      })
-      const items = await academicService.getSupportHistory()
-      setHistory(items)
-      setForm((current) => ({ ...current, enrollmentId: '', type: '', notes: '' }))
-    } catch (requestError) {
-      setError(requestError.message)
-    }
-  }
+  // Overall statistics for the selected subject and section
+  const scoredStudents = students
+    .map((s) => ({
+      ...s,
+      overall: getOverallStudentScore(s.id, scores, items),
+    }))
+    .filter((s) => s.overall !== null)
+
+  const passingStudents = scoredStudents.filter((s) => s.overall.percent >= rules.passMark)
+  const atRiskStudents = scoredStudents
+    .filter((s) => s.overall.percent < rules.supportThreshold)
+    .sort((a, b) => a.overall.percent - b.overall.percent)
 
   return (
-    <div>
-      <PageHeader
-        eyebrow="STUDENT SUPPORT"
-        title="Support activities"
-        description="Review interventions explicitly recorded for students."
-      />
-      {error && <div className="card"><p>{error}</p></div>}
-      <form className="card" onSubmit={submit}>
-        <h2>Record support activity</h2>
-        <label>
-          Enrollment ID
-          <input
-            type="number"
-            required
-            value={form.enrollmentId}
-            onChange={(event) => setForm({ ...form, enrollmentId: event.target.value })}
-          />
-        </label>
-        <label>
-          Activity type
-          <input
-            required
-            value={form.type}
-            onChange={(event) => setForm({ ...form, type: event.target.value })}
-          />
-        </label>
-        <label>
-          Remarks
-          <textarea
-            value={form.notes}
-            onChange={(event) => setForm({ ...form, notes: event.target.value })}
-          />
-        </label>
-        <label>
-          Date
-          <input
-            type="date"
-            required
-            value={form.activityDate}
-            onChange={(event) => setForm({ ...form, activityDate: event.target.value })}
-          />
-        </label>
-        <button className="btn primary" type="submit">Record support</button>
-      </form>
-      <section className="card">
-        {history.length === 0 ? (
-          <p>No support activities have been recorded yet.</p>
+    <>
+      <section className="kpi-grid">
+        <div className="card kpi attention">
+          <div className="kpi-top">
+            <span>Students Needing Support</span>
+            <div><Icon name="heart" size={16} /></div>
+          </div>
+          <strong>{atRiskStudents.length}</strong>
+          <small className="down">Overall grade &lt; 60%</small>
+        </div>
+
+        <div className="card kpi">
+          <div className="kpi-top">
+            <span>Total Enrolled</span>
+            <div><Icon name="users" size={16} /></div>
+          </div>
+          <strong>{students.length}</strong>
+          <small>{scoredStudents.length} with recorded scores</small>
+        </div>
+
+        <div className="card kpi">
+          <div className="kpi-top">
+            <span>Passing Rate</span>
+            <div><Icon name="check" size={16} /></div>
+          </div>
+          <strong>
+            {scoredStudents.length ? `${Math.round((passingStudents.length / scoredStudents.length) * 100)}%` : '—'}
+          </strong>
+          <small>{passingStudents.length} of {scoredStudents.length} passing (≥75%)</small>
+        </div>
+      </section>
+
+      <section className="card" style={{ marginTop: '20px' }}>
+        <div className="section-head" style={{ marginBottom: '16px' }}>
+          <div>
+            <h2>At-Risk Learners ({atRiskStudents.length})</h2>
+            <p>Students whose cumulative grade is below 60% in {data.classLabel}.</p>
+          </div>
+          {atRiskStudents.length > 0 && (
+            <Badge tone="danger">Requires Support Intervention</Badge>
+          )}
+        </div>
+
+        {atRiskStudents.length === 0 ? (
+          <div style={{ padding: '24px 0', textAlign: 'center' }}>
+            <p className="mapping-note" style={{ fontSize: '1rem', color: '#027a48' }}>
+              ✓ All scored students currently maintain an overall grade of 60% or higher.
+            </p>
+          </div>
         ) : (
           <div className="table-wrap">
             <table>
               <thead>
-                <tr><th>Date</th><th>Type</th><th>Remarks</th></tr>
+                <tr>
+                  <th>Student</th>
+                  <th>Student ID</th>
+                  <th>Cumulative Score</th>
+                  <th>Overall Grade</th>
+                  <th>Completed Assessments</th>
+                  <th>Support Priority</th>
+                  <th>Action</th>
+                </tr>
               </thead>
               <tbody>
-                {history.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.activityDate}</td>
-                    <td><Badge tone="success">{item.type}</Badge></td>
-                    <td>{item.notes || '—'}</td>
-                  </tr>
-                ))}
+                {atRiskStudents.map((s) => {
+                  const severity = getSeverity(s.overall.percent)
+                  return (
+                    <tr key={s.id}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <Avatar name={`${s.firstName} ${s.lastName}`} size="sm" />
+                          <strong>{s.firstName} {s.lastName}</strong>
+                        </div>
+                      </td>
+                      <td><code>{s.id}</code></td>
+                      <td>{s.overall.earned} / {s.overall.max} pts</td>
+                      <td>
+                        <strong style={{ color: '#b42318' }}>
+                          {Math.round(s.overall.percent * 10) / 10}%
+                        </strong>
+                      </td>
+                      <td>{s.overall.completedCount} of {items.length}</td>
+                      <td>
+                        <Badge tone={severity.tone}>{severity.label}</Badge>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="btn ghost"
+                          style={{ padding: '4px 10px', fontSize: '0.825rem' }}
+                          onClick={() => onNavigate && onNavigate('Students')}
+                        >
+                          View student
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
         )}
       </section>
+
+      {scoredStudents.length > 0 && (
+        <section className="card" style={{ marginTop: '20px' }}>
+          <div className="section-head" style={{ marginBottom: '16px' }}>
+            <div>
+              <h2>All Scored Students ({scoredStudents.length})</h2>
+              <p>Overview of all students with assessment records in {data.classLabel}.</p>
+            </div>
+          </div>
+
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Student ID</th>
+                  <th>Cumulative Score</th>
+                  <th>Overall Grade</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {scoredStudents.map((s) => {
+                  const isAtRisk = s.overall.percent < rules.supportThreshold
+                  const isPassing = s.overall.percent >= rules.passMark
+                  return (
+                    <tr key={s.id}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <Avatar name={`${s.firstName} ${s.lastName}`} size="sm" />
+                          <span>{s.firstName} {s.lastName}</span>
+                        </div>
+                      </td>
+                      <td><code>{s.id}</code></td>
+                      <td>{s.overall.earned} / {s.overall.max} pts</td>
+                      <td>
+                        <strong>{Math.round(s.overall.percent * 10) / 10}%</strong>
+                      </td>
+                      <td>
+                        <Badge tone={isAtRisk ? 'danger' : isPassing ? 'success' : 'warning'}>
+                          {isAtRisk ? 'Needs Support' : isPassing ? 'Passing' : 'Approaching Pass'}
+                        </Badge>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+    </>
+  )
+}
+
+export default function SupportPage({ data, onNavigate }) {
+  if (!data) {
+    return <div className="card"><p>Loading support data…</p></div>
+  }
+
+  return (
+    <div>
+      <PageHeader
+        eyebrow={data.classLabel || 'STUDENT SUPPORT'}
+        title="Student Support"
+        description="Monitor students requiring academic support based on an overall grade below 60%."
+        action={<SubjectSelect data={data} />}
+      />
+      <DataGate data={data}>
+        <SupportBody data={data} onNavigate={onNavigate} />
+      </DataGate>
     </div>
   )
 }
