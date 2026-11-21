@@ -1,9 +1,13 @@
 import { useState, useRef } from 'react'
 import { PageHeader } from '@/components/shared/PageHeader.jsx'
+import { SubjectSelect } from '@/components/shared/SubjectSelect.jsx'
+import { DataGate } from '@/components/shared/DataGate.jsx'
 import { Icon } from '@/components/ui/Icon.jsx'
-import { importSettings } from '@/mockdata/mockData.js'
 
-const { stepNames, expectedColumns, expectedNaming, maxFileSize } = importSettings
+const stepNames = ['Upload CSV', 'Done']
+const expectedColumns = ['Student ID', 'Student First Name', 'Student Last Name']
+const expectedNaming = ['File Name: SubjectName', 'Sheet Name: SectionName']
+const maxFileSize = '10 MB'
 
 // ---------- helpers ----------
 
@@ -88,13 +92,14 @@ function HintRow({ label, items }) {
 
 // ---------- the page ----------
 
-export function ImportClassListView({ onImport, onNavigate }) {
+function ImportBody({ data, onNavigate }) {
   const [step, setStep] = useState(1) // 1 = upload, 2 = done
-  const [count, setCount] = useState(0) // how many students were imported
+  const [result, setResult] = useState(null) // { imported, skipped, failed }
   const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
   const fileInput = useRef(null) // points to the hidden file picker
 
-  // Reads the chosen file, imports the students, and moves to the last step
+  // Reads the chosen file, sends the students to the backend, and moves to the last step
   async function readFile(file) {
     if (!file) return
     if (!file.name.toLowerCase().endsWith('.csv')) {
@@ -102,16 +107,30 @@ export function ImportClassListView({ onImport, onNavigate }) {
       return
     }
 
-    const result = parseCsv(await file.text())
-    if (result.error) {
-      setError(result.error)
+    const parsed = parseCsv(await file.text())
+    if (parsed.error) {
+      setError(parsed.error)
       return
     }
 
-    onImport(result.students) // sends the students up to App
-    setCount(result.students.length)
+    setBusy(true)
     setError('')
-    setStep(2)
+    try {
+      const outcome = await data.importStudents(parsed.students)
+      if (outcome.imported === 0) {
+        setError(
+          outcome.failed.length > 0
+            ? `No students were imported. Check that these Student IDs have an account: ${outcome.failed.join(', ')}`
+            : 'All of these students are already in this class list.'
+        )
+      } else {
+        setResult(outcome)
+        setStep(2)
+      }
+    } catch (err) {
+      setError(err.message)
+    }
+    setBusy(false)
   }
 
   function handleFileChange(e) {
@@ -125,19 +144,13 @@ export function ImportClassListView({ onImport, onNavigate }) {
   }
 
   function handleReset() {
-    setCount(0)
+    setResult(null)
     setError('')
     setStep(1)
   }
 
   return (
-    <div>
-      <PageHeader
-        eyebrow="DATA WORKFLOW"
-        title="Import Class List"
-        description="Bring scores into Tudlo, validate them, and correct issues before analysis."
-      />
-
+    <>
       <Stepper step={step} />
 
       {step === 1 && (
@@ -158,30 +171,57 @@ export function ImportClassListView({ onImport, onNavigate }) {
               onChange={handleFileChange}
               hidden
             />
-            <button className="btn secondary" onClick={() => fileInput.current.click()}>
-              Choose CSV file
+            <button
+              className="btn secondary"
+              type="button"
+              disabled={busy}
+              onClick={() => fileInput.current.click()}
+            >
+              {busy ? 'Importing…' : 'Choose CSV file'}
             </button>
 
             <small>CSV only · Maximum {maxFileSize}</small>
-            {error && <small style={{ color: '#b42318' }}>{error}</small>}
+            {error && <small role="alert" style={{ color: '#b42318' }}>{error}</small>}
           </div>
           <HintRow label="Expected columns" items={expectedColumns} />
           <HintRow label="Expected Naming" items={expectedNaming} />
         </section>
       )}
 
-      {step === 2 && (
+      {step === 2 && result && (
         <section className="card done-card">
           <div className="done-check"><Icon name="check" size={28} /></div>
           <p className="eyebrow">IMPORT COMPLETE</p>
-          <h2>{count} Student rows are ready</h2>
-          <p>Your class analytics and learning gaps have been updated.</p>
+          <h2>{result.imported} Student rows are ready</h2>
+          <p>
+            Your class analytics and learning gaps have been updated.
+            {result.skipped > 0 &&
+              ` ${result.skipped} ${result.skipped === 1 ? 'student was' : 'students were'} already in this class list and skipped.`}
+            {result.failed.length > 0 &&
+              ` ${result.failed.length} could not be imported. Check that these Student IDs have an account: ${result.failed.join(', ')}.`}
+          </p>
           <div>
             <button className="btn ghost" onClick={handleReset}>Import another file</button>
             <button className="btn primary" onClick={() => onNavigate('Learning Gaps')}>View learning gaps</button>
           </div>
         </section>
       )}
+    </>
+  )
+}
+
+export function ImportClassListView({ data, onNavigate }) {
+  return (
+    <div>
+      <PageHeader
+        eyebrow="DATA WORKFLOW"
+        title="Import Class List"
+        description="Bring scores into Tudlo, validate them, and correct issues before analysis."
+        action={<SubjectSelect data={data} />}
+      />
+      <DataGate data={data}>
+        <ImportBody data={data} onNavigate={onNavigate} />
+      </DataGate>
     </div>
   )
 }
