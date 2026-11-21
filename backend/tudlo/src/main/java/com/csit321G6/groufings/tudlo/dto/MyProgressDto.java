@@ -9,9 +9,12 @@ public final class MyProgressDto {
 
     public record Response(
             Long id,
+            Long offeringId,
             String studentId,
             String subjectName,
             String classSection,
+            Long teacherId,
+            String teacherName,
             Double subjectAverage,
             Double overallGrade,
             Integer totalAssessments,
@@ -22,8 +25,11 @@ public final class MyProgressDto {
     }
 
     public record SummaryResponse(
+            Long offeringId,
             String subjectName,
             String classSection,
+            Long teacherId,
+            String teacherName,
             Double subjectAverage,
             Double overallGrade,
             Integer totalAssessments,

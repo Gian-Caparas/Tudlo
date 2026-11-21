@@ -23,6 +23,11 @@ public class ScoresController extends CrudController<ScoresDto.Request, ScoresDt
         return service;
     }
 
+    @GetMapping("/offering/{offeringId}")
+    public List<ScoresDto.Response> getByOfferingId(@PathVariable Long offeringId) {
+        return service.getByOfferingId(offeringId);
+    }
+
     @GetMapping("/student/{studentId}")
     public List<ScoresDto.Response> getByStudentId(@PathVariable String studentId) {
         return service.getByStudentId(studentId);

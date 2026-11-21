@@ -23,9 +23,21 @@ public class ActivityController extends CrudController<ActivityDto.Request, Acti
         return service;
     }
 
+    @GetMapping("/offering/{offeringId}")
+    public List<ActivityDto.Response> getByOfferingId(@PathVariable Long offeringId) {
+        return service.getByOfferingId(offeringId);
+    }
+
     @GetMapping("/student/{studentId}")
     public List<ActivityDto.Response> getByStudentId(@PathVariable String studentId) {
         return service.getByStudentId(studentId);
+    }
+
+    @GetMapping("/student/{studentId}/offering/{offeringId}")
+    public List<ActivityDto.Response> getByStudentAndOffering(
+            @PathVariable String studentId,
+            @PathVariable Long offeringId) {
+        return service.getByStudentAndOffering(studentId, offeringId);
     }
 
     @GetMapping("/subject/{subjectName}/section/{classSection}")

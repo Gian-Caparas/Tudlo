@@ -1,7 +1,11 @@
 package com.csit321G6.groufings.tudlo.dto;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+
 import java.time.LocalDateTime;
+import java.util.List;
 
 public final class ClassListDto {
 
@@ -9,9 +13,8 @@ public final class ClassListDto {
     }
 
     public record Request(
-            @NotBlank(message = "Subject name is required")
+            Long offeringId,
             String subjectName,
-            @NotBlank(message = "Class section is required")
             String classSection,
             @NotBlank(message = "Student ID is required")
             String studentId,
@@ -24,8 +27,11 @@ public final class ClassListDto {
 
     public record Response(
             Long id,
+            Long offeringId,
             String subjectName,
             String classSection,
+            Long teacherId,
+            String teacherName,
             String studentId,
             String firstName,
             String lastName,
@@ -34,19 +40,36 @@ public final class ClassListDto {
     }
 
     public record BulkImportRequest(
-            @NotBlank(message = "Subject name is required")
+            Long offeringId,
             String subjectName,
-            @NotBlank(message = "Class section is required")
             String classSection,
+            Long teacherId,
             @NotEmpty(message = "Student list cannot be empty")
-            java.util.List<StudentRecord> students
+            @Valid
+            List<StudentRecord> students
     ) {
     }
 
     public record StudentRecord(
-            @NotBlank String studentId,
-            @NotBlank String firstName,
-            @NotBlank String lastName
+            @NotBlank(message = "Student ID is required") String studentId,
+            @NotBlank(message = "First name is required") String firstName,
+            @NotBlank(message = "Last name is required") String lastName
+    ) {
+    }
+
+    // Excel Import DTOs
+    public record ExcelImportResult(
+            int importedCount,
+            int createdAccountsCount,
+            int skippedDuplicatesCount,
+            List<OfferingInfo> offerings
+    ) {
+    }
+
+    public record OfferingInfo(
+            Long offeringId,
+            String subjectName,
+            String classSection
     ) {
     }
 }

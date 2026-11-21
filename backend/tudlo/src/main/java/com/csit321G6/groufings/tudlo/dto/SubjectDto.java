@@ -1,6 +1,8 @@
 package com.csit321G6.groufings.tudlo.dto;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDateTime;
 
 public final class SubjectDto {
@@ -20,6 +22,7 @@ public final class SubjectDto {
 
     public record Response(
             Long id,
+            Long offeringId,
             String subjectName,
             String classSection,
             Long teacherId,

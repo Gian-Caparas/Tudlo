@@ -23,6 +23,11 @@ public class AssessmentController extends CrudController<AssessmentDto.Request, 
         return service;
     }
 
+    @GetMapping("/offering/{offeringId}")
+    public List<AssessmentDto.Response> getByOfferingId(@PathVariable Long offeringId) {
+        return service.getByOfferingId(offeringId);
+    }
+
     @GetMapping("/subject/{subjectName}/section/{classSection}")
     public List<AssessmentDto.Response> getBySubjectAndSection(
             @PathVariable String subjectName,

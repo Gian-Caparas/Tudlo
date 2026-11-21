@@ -26,6 +26,11 @@ public class MyProgressController {
         return service.getSummaryByStudentId(studentId);
     }
 
+    @GetMapping("/offering/{offeringId}")
+    public List<MyProgressDto.Response> getByOfferingId(@PathVariable Long offeringId) {
+        return service.getByOfferingId(offeringId);
+    }
+
     @GetMapping("/subject/{subjectName}/section/{classSection}")
     public List<MyProgressDto.Response> getBySubjectAndSection(
             @PathVariable String subjectName,
@@ -35,14 +40,16 @@ public class MyProgressController {
 
     @PostMapping("/calculate")
     public MyProgressDto.Response calculateProgress(
+            @RequestParam(required = false) Long offeringId,
             @RequestParam String studentId,
-            @RequestParam String subjectName,
-            @RequestParam String classSection,
+            @RequestParam(required = false) String subjectName,
+            @RequestParam(required = false) String classSection,
             @RequestParam Double subjectAverage,
             @RequestParam Double overallGrade,
             @RequestParam Integer totalAssessments,
             @RequestParam Integer completedAssessments) {
-        return service.calculateAndSaveProgress(studentId, subjectName, classSection,
-            subjectAverage, overallGrade, totalAssessments, completedAssessments);
+        return service.calculateAndSaveProgress(
+                offeringId, studentId, subjectName, classSection,
+                subjectAverage, overallGrade, totalAssessments, completedAssessments);
     }
 }

@@ -9,10 +9,13 @@ public final class LearningGapDto {
 
     public record Response(
             Long id,
+            Long offeringId,
             String studentId,
             String studentName,
             String subjectName,
             String classSection,
+            Long teacherId,
+            String teacherName,
             Double overallScore,
             Double maxPossibleScore,
             Double percentage,

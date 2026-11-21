@@ -4,7 +4,10 @@ import com.csit321G6.groufings.tudlo.common.CrudController;
 import com.csit321G6.groufings.tudlo.common.CrudService;
 import com.csit321G6.groufings.tudlo.dto.ClassListDto;
 import com.csit321G6.groufings.tudlo.service.ClassListService;
+import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -24,8 +27,13 @@ public class ClassListController extends CrudController<ClassListDto.Request, Cl
     }
 
     @PostMapping("/bulk-import")
-    public List<ClassListDto.Response> bulkImport(@RequestBody ClassListDto.BulkImportRequest request) {
+    public List<ClassListDto.Response> bulkImport(@Valid @RequestBody ClassListDto.BulkImportRequest request) {
         return service.bulkImport(request);
+    }
+
+    @GetMapping("/offering/{offeringId}")
+    public List<ClassListDto.Response> getByOfferingId(@PathVariable Long offeringId) {
+        return service.getByOfferingId(offeringId);
     }
 
     @GetMapping("/subject/{subjectName}/section/{classSection}")
@@ -38,5 +46,10 @@ public class ClassListController extends CrudController<ClassListDto.Request, Cl
     @GetMapping("/student/{studentId}")
     public List<ClassListDto.Response> getByStudentId(@PathVariable String studentId) {
         return service.getByStudentId(studentId);
+    }
+
+    @PostMapping(value = "/import-excel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ClassListDto.ExcelImportResult importExcel(@RequestParam("file") MultipartFile file) {
+        return service.importExcel(file);
     }
 }

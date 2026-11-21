@@ -1,6 +1,9 @@
 package com.csit321G6.groufings.tudlo.dto;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDateTime;
 
 public final class ScoresDto {
@@ -9,11 +12,10 @@ public final class ScoresDto {
     }
 
     public record Request(
+            Long offeringId,
             @NotBlank(message = "Student ID is required")
             String studentId,
-            @NotBlank(message = "Subject name is required")
             String subjectName,
-            @NotBlank(message = "Class section is required")
             String classSection,
             @NotNull(message = "Score is required")
             @DecimalMin(value = "0.0", message = "Score cannot be negative")
@@ -23,9 +25,12 @@ public final class ScoresDto {
 
     public record Response(
             Long id,
+            Long offeringId,
             String studentId,
             String subjectName,
             String classSection,
+            Long teacherId,
+            String teacherName,
             Double score,
             LocalDateTime createdAt
     ) {
