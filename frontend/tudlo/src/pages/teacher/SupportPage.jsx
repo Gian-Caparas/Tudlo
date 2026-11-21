@@ -16,6 +16,7 @@ function getSeverity(percent) {
 function SupportBody({ data, onNavigate }) {
   const { students, items, scores } = data
 
+  // Overall statistics for the selected subject and section
   const scoredStudents = students
     .map((s) => ({
       ...s,
@@ -200,7 +201,7 @@ export default function SupportPage({ data, onNavigate }) {
         description="Monitor students requiring academic support based on an overall grade below 60%."
         action={<SubjectSelect data={data} />}
       />
-      <DataGate data={data}>
+      <DataGate data={data} onNavigate={onNavigate}>
         <SupportBody data={data} onNavigate={onNavigate} />
       </DataGate>
     </div>

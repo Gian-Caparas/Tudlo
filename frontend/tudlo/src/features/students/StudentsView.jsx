@@ -68,9 +68,11 @@ function ScoreCell({ record, maxScore, onSave, onFail }) {
   )
 }
 
-// The dialog to add an activity (a new column in the grid)
+// The dialog to add an assessment item (a new column in the grid)
 function ActivityModal({ items, onAdd, onClose }) {
   const [name, setName] = useState('')
+  const [outcome, setOutcome] = useState('')
+  const [maxScore, setMaxScore] = useState('100')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -84,20 +86,26 @@ function ActivityModal({ items, onAdd, onClose }) {
   async function handleSubmit(e) {
     e.preventDefault() // stop the page from reloading
     const trimmed = name.trim()
+    const trimmedOutcome = outcome.trim() || 'Course learning outcome'
+    const numMax = Number(maxScore)
 
     if (trimmed === '') {
-      setError('Enter an activity name.')
+      setError('Enter an assessment item name.')
+      return
+    }
+    if (!numMax || numMax <= 0) {
+      setError('Max score must be greater than 0.')
       return
     }
     if (items.some((i) => i.name.toLowerCase() === trimmed.toLowerCase())) {
-      setError('This activity already exists in this class.')
+      setError('This assessment item already exists in this class.')
       return
     }
 
     setSaving(true)
     setError('')
     try {
-      await onAdd(trimmed)
+      await onAdd({ name: trimmed, outcome: trimmedOutcome, maxScore: numMax })
       onClose()
     } catch (err) {
       setError(err.message)
@@ -107,7 +115,7 @@ function ActivityModal({ items, onAdd, onClose }) {
 
   return (
     <Modal
-      title="Activity"
+      title="Add Assessment Item"
       onClose={saving ? () => {} : onClose}
       footer={
         <>
@@ -116,20 +124,41 @@ function ActivityModal({ items, onAdd, onClose }) {
           </button>
           {/* Submits the form below via its id */}
           <button className="btn primary" type="submit" form="activity-form" disabled={saving}>
-            {saving ? 'Saving…' : 'Save activity'}
+            {saving ? 'Saving…' : 'Save item'}
           </button>
         </>
       }
     >
       <form id="activity-form" className="form-grid" onSubmit={handleSubmit}>
         <label>
-          Activity name
+          Assessment item name
           <input
             type="text"
             value={name}
+            placeholder="e.g. Quiz 1, Midterm Exam"
             maxLength="150"
             autoFocus
             onChange={(e) => setName(e.target.value)}
+          />
+        </label>
+        <label>
+          Learning outcome
+          <input
+            type="text"
+            value={outcome}
+            placeholder="e.g. Apply object-oriented principles"
+            maxLength="250"
+            onChange={(e) => setOutcome(e.target.value)}
+          />
+        </label>
+        <label>
+          Max score
+          <input
+            type="number"
+            min="1"
+            step="any"
+            value={maxScore}
+            onChange={(e) => setMaxScore(e.target.value)}
           />
         </label>
         {error && <p className="form-error" role="alert">{error}</p>}
@@ -191,7 +220,7 @@ export function StudentsView({ data }) {
         </button>
       </div>
 
-      {adding && <ActivityModal items={items} onAdd={data.addActivity} onClose={() => setAdding(false)} />}
+      {adding && <ActivityModal items={items} onAdd={data.addAssessment} onClose={() => setAdding(false)} />}
 
       <DataGate data={data}>
         {message && <p className="form-error" role="alert">{message}</p>}

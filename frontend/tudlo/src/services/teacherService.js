@@ -43,6 +43,17 @@ export const teacherService = {
     })
   },
 
+  // Excel Import (xlsx/xls)
+  importClassListExcel(file) {
+    const form = new FormData()
+    form.append('file', file)
+    return apiRequest('/class-lists/import-excel', {
+      method: 'POST',
+      body: form,
+      headers: {}, // let browser set Content-Type with boundary
+    })
+  },
+
   // Adds one student to a class list
   addClassListStudent(subject, student) {
     return apiRequest('/class-lists', {
@@ -104,5 +115,18 @@ export const teacherService = {
 
   updateActivity(id, activity) {
     return apiRequest(`/activities/${id}`, { method: 'PUT', body: JSON.stringify(activity) })
+  },
+
+  // At-risk students (< 60% overall grade)
+  getAtRiskByTeacher(teacherId) {
+    return apiRequest(`/learning-gaps/at-risk/teacher/${teacherId}`)
+  },
+
+  getAtRiskByOffering(offeringId) {
+    return apiRequest(`/learning-gaps/at-risk/offering/${offeringId}`)
+  },
+
+  getAllGapsByOffering(offeringId) {
+    return apiRequest(`/learning-gaps/offering/${offeringId}`)
   },
 }

@@ -1,39 +1,27 @@
 import { apiRequest } from '@/lib/apiClient.js'
 
-export const academicService = {
-  importClasslist(file, term = 'Current') {
-    const form = new FormData()
-    form.append('file', file)
-    return apiRequest(`/classlists/import?term=${encodeURIComponent(term)}`, {
-      method: 'POST',
-      body: form,
-    })
-  },
+const encode = encodeURIComponent
 
+export const academicService = {
+  // Student endpoints
   getOwnProgress() {
-    return apiRequest('/students/me/progress')
+    return apiRequest('/my-progress')
   },
 
   getOwnSubmissions() {
-    return apiRequest('/students/me/submissions')
-  },
-
-  getHeatmap(offeringId) {
-    return apiRequest(`/offerings/${offeringId}/heatmap`)
+    return apiRequest('/activities/student/me')
   },
 
   getMyOfferings() {
-    return apiRequest('/offerings')
+    return apiRequest('/subject-offerings')
   },
 
-  recordSupport(activity) {
-    return apiRequest('/support', {
-      method: 'POST',
-      body: JSON.stringify(activity),
-    })
+  // Learning gaps / support
+  getAtRiskByOffering(offeringId) {
+    return apiRequest(`/learning-gaps/at-risk/offering/${offeringId}`)
   },
 
-  getSupportHistory() {
-    return apiRequest('/support')
+  getHeatmap(offeringId) {
+    return apiRequest(`/learning-gaps/heatmap/offering/${offeringId}`)
   },
 }

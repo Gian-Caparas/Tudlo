@@ -1,7 +1,7 @@
 import { Avatar } from "@/components/ui/Avatar.jsx";
 import { Badge } from "@/components/ui/Badge.jsx";
 import { Icon } from "@/components/ui/Icon.jsx";
-export function Header({ role, page, userName, onLogout }) {
+export function Header({ role, page, userName, classLabel, onLogout }) {
   const roleLabel = {
     admin: "Admin",
     teacher: "Teacher",
@@ -13,7 +13,7 @@ export function Header({ role, page, userName, onLogout }) {
       <div className="breadcrumb">
         <span>
           {role === "teacher"
-            ? "CSIT321 – G6"
+            ? (classLabel || "Teacher Workspace")
             : role === "student"
               ? "My learning"
               : "Tudlo Admin"}

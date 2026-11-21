@@ -2,9 +2,9 @@ import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth.js'
 import { teacherService } from '@/services/teacherService.js'
 
-// Loads the data of the teacher pages (Dashboard, Import Class List, Subject Mapping, Students)
+// Loads the data of the teacher pages (Dashboard, Import Class List, Subject Mapping, Students, Support)
 // from the backend. It is loaded once in App, so every page shows the same subject and the same data.
-export function useTeacherData() {
+export function useTeacherData(){
   const { role, user, profileId } = useAuth()
   const isTeacher = role === 'teacher'
   const teacherId = profileId ?? user?.id ?? null
@@ -109,61 +109,24 @@ export function useTeacherData() {
   // Load the latest data again without showing the loading screen
   const refresh = useCallback(() => setReloadCount((n) => n + 1), [])
 
-  // Imports a class list file. The class (subject + section) comes from the file name.
-  // If the class does not exist yet, it is created. Students already in the class are skipped.
-  async function importClassList({ subjectName: name, classSection: section, students: rows }) {
-    const same = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase()
-
-    // 1. Find the class, or create it
-    const mine = await teacherService.getSubjects(teacherId)
-    let subject = mine.find((s) => same(s.subjectName, name) && same(s.classSection, section))
-    const created = !subject
-    if (created) {
-      try {
-        subject = await teacherService.createSubject({ subjectName: name, classSection: section, teacherId })
-      } catch (e) {
-        if (e.status === 0 || e.status === 401 || e.status === 403) throw e
-        throw new Error(`Could not create the class ${name} – ${section}.`, { cause: e })
-      }
-    }
-
-    // 2. Students who are already in this class are skipped
-    const known = new Set((await teacherService.getClassList(subject)).map((c) => c.studentId))
-    const fresh = []
-    rows.forEach((row) => {
-      if (known.has(row.id)) return
-      known.add(row.id) // also skips repeated rows in the same file
-      fresh.push(row)
-    })
-    const skipped = rows.length - fresh.length
-
-    // 3. Add the new students
-    let failed = []
-    if (fresh.length > 0) {
-      try {
-        await teacherService.bulkImportClassList(subject, fresh)
-      } catch (e) {
-        if (e.status === 0 || e.status === 401) throw e
-        // The bulk import is all or nothing, so add the students one by one to find the ones that fail
-        const results = await Promise.allSettled(
-          fresh.map((student) => teacherService.addClassListStudent(subject, student))
-        )
-        failed = fresh.filter((_, i) => results[i].status === 'rejected').map((s) => s.id)
-      }
-    }
-
-    // 4. Show this class everywhere. Its data is only seen when this class is selected.
+  // Excel Import (xlsx/xls) - backend handles everything
+  async function importClassListExcel(file) {
+    const outcome = await teacherService.importClassListExcel(file)
+    // Refresh subjects list and select the newly created one
     const latest = await teacherService.getSubjects(teacherId)
     setSubjects(latest.map((s) => ({ ...s, label: `${s.subjectName} – ${s.classSection}` })))
-    setSelectedId(subject.id)
+    if (outcome.offerings?.length > 0) {
+      setSelectedId(outcome.offerings[0].offeringId)
+    }
     setReloadCount((n) => n + 1)
 
     return {
-      label: `${subject.subjectName} – ${subject.classSection}`,
-      created,
-      imported: fresh.length - failed.length,
-      skipped,
-      failed,
+      ...outcome,
+      label: (outcome.offerings ?? []).map(o => `${o.subjectName} – ${o.classSection}`).join(', '),
+      created: (outcome.createdAccountsCount ?? 0) > 0,
+      imported: outcome.importedCount ?? 0,
+      skipped: outcome.skippedDuplicatesCount ?? 0,
+      failed: [],
     }
   }
 
@@ -199,7 +162,7 @@ export function useTeacherData() {
   // Adds a new assessment item for the chosen subject and section
   async function addAssessment({ name, outcome, maxScore }) {
     const subject = { subjectName, classSection }
-    await teacherService.createAssessment(subject, { name, outcome, maxScore })
+    await teacherService.createAssessment({ name, outcome, maxScore }, subject)
     refresh()
   }
 
@@ -213,6 +176,10 @@ export function useTeacherData() {
   async function addActivity({ studentId, assessment, score }) {
     const existing = scores.find((r) => r.studentId === studentId && r.assessment === assessment)
     const body = { activityName: assessment, studentId, score: Number(score), subjectName, classSection }
+    if (existing) await teacherService.updateActivity(existing.id, body)
+    else await teacherService.createActivity(body)
+    refresh()
+  }
 
   // Saves one score typed into the Students grid.
   // A score of null removes the score.
@@ -241,7 +208,8 @@ export function useTeacherData() {
     scores,
     selectSubject,
     retry,
-    importClassList,
+    importClassList: importClassListExcel,
+    importClassListExcel,
     saveMapping,
     addAssessment,
     deleteAssessment,

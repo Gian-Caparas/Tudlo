@@ -190,7 +190,7 @@ export function DashboardView({ data, userName, onNavigate }) {
         title={`${getGreeting()}, ${userName}`}
         description="Here's where your class stands today, and who may need your attention."
       />
-      <DataGate data={data}>
+      <DataGate data={data} onNavigate={onNavigate}>
         <DashboardBody data={data} onNavigate={onNavigate} />
       </DataGate>
     </div>
