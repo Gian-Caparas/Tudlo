@@ -167,6 +167,19 @@ export function useTeacherData() {
     return { changed: changed.length, saved: toSave.length - rejected, failed }
   }
 
+  // Adds a new assessment item for the chosen subject and section
+  async function addAssessment({ name, outcome, maxScore }) {
+    const subject = { subjectName, classSection }
+    await teacherService.createAssessment(subject, { name, outcome, maxScore })
+    refresh()
+  }
+
+  // Deletes an assessment item
+  async function deleteAssessment(id) {
+    await teacherService.deleteAssessment(id)
+    refresh()
+  }
+
   // Saves a score. If the student already has a score for that assessment item, it is replaced.
   async function addActivity({ studentId, assessment, score }) {
     const existing = scores.find((r) => r.studentId === studentId && r.assessment === assessment)
@@ -191,6 +204,8 @@ export function useTeacherData() {
     retry,
     importStudents,
     saveMapping,
+    addAssessment,
+    deleteAssessment,
     addActivity,
   }
 }
