@@ -196,16 +196,23 @@ export function useTeacherData() {
     return { changed: changed.length, saved: toSave.length - rejected, failed }
   }
 
-  // Adds a new activity (an assessment item) to the chosen subject.
-  // Its learning outcome and max score can be set in Subject Mapping.
-  async function addActivity(name) {
+  // Adds a new assessment item for the chosen subject and section
+  async function addAssessment({ name, outcome, maxScore }) {
     const subject = { subjectName, classSection }
-    await teacherService.createAssessment(
-      { name: name.trim(), outcome: 'Not set yet', maxScore: 100 },
-      subject
-    )
+    await teacherService.createAssessment(subject, { name, outcome, maxScore })
     refresh()
   }
+
+  // Deletes an assessment item
+  async function deleteAssessment(id) {
+    await teacherService.deleteAssessment(id)
+    refresh()
+  }
+
+  // Saves a score. If the student already has a score for that assessment item, it is replaced.
+  async function addActivity({ studentId, assessment, score }) {
+    const existing = scores.find((r) => r.studentId === studentId && r.assessment === assessment)
+    const body = { activityName: assessment, studentId, score: Number(score), subjectName, classSection }
 
   // Saves one score typed into the Students grid.
   // A score of null removes the score.
@@ -236,6 +243,8 @@ export function useTeacherData() {
     retry,
     importClassList,
     saveMapping,
+    addAssessment,
+    deleteAssessment,
     addActivity,
     saveScore,
   }
