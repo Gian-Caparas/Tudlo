@@ -70,6 +70,23 @@ export const teacherService = {
     })
   },
 
+    createAssessment(subject, item) {
+    return apiRequest('/assessments', {
+      method: 'POST',
+      body: JSON.stringify({
+        assessmentItem: item.name.trim(),
+        learningOutcome: item.outcome.trim(),
+        maxScore: Number(item.maxScore),
+        subjectName: subject.subjectName,
+        classSection: subject.classSection,
+      }),
+    })
+  },
+
+  deleteAssessment(id) {
+    return apiRequest(`/assessments/${id}`, { method: 'DELETE' })
+  },
+
   createActivity(activity) {
     return apiRequest('/activities', { method: 'POST', body: JSON.stringify(activity) })
   },
