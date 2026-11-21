@@ -5,8 +5,8 @@ import { DataGate } from '@/components/shared/DataGate.jsx'
 import { Icon } from '@/components/ui/Icon.jsx'
 
 const stepNames = ['Upload CSV', 'Done']
-const expectedColumns = ['Student ID', 'Student First Name', 'Student Last Name']
-const expectedNaming = ['File Name: SubjectName', 'Sheet Name: SectionName']
+const expectedColumns = ['Student-id', 'Firstname', 'Lastname']
+const expectedNaming = ['File Name: SubjectName', 'Section: Selected in header dropdown']
 const maxFileSize = '10 MB'
 
 // ---------- helpers ----------
@@ -27,16 +27,22 @@ function splitLine(line) {
   return cells
 }
 
+function normalizeHeader(h) {
+  return h.toLowerCase().replace(/[\s\-_]+/g, '').trim()
+}
+
 // Turns the text of a CSV file into students like { id, firstName, lastName }.
 // Returns { students } or { error }.
 function parseCsv(text) {
   const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter((line) => line.trim() !== '')
   if (lines.length < 2) return { error: 'This file has no rows to import.' }
 
-  const headers = splitLine(lines[0]).map((h) => h.toLowerCase())
-  const id = headers.findIndex((h) => h === 'student id' || h === 'id')
-  const firstName = headers.findIndex((h) => h === 'student first name' || h === 'first name')
-  const lastName = headers.findIndex((h) => h === 'student last name' || h === 'last name')
+  const rawHeaders = splitLine(lines[0])
+  const headers = rawHeaders.map(normalizeHeader)
+
+  const id = headers.findIndex((h) => ['studentid', 'stundentid', 'id', 'studentno', 'studentnumber'].includes(h))
+  const firstName = headers.findIndex((h) => ['firstname', 'studentfirstname', 'givenname', 'fname'].includes(h))
+  const lastName = headers.findIndex((h) => ['lastname', 'studentlastname', 'surname', 'familyname', 'lname'].includes(h))
 
   if ([id, firstName, lastName].includes(-1)) {
     return { error: `Your CSV needs these columns: ${expectedColumns.join(', ')}.` }
@@ -113,6 +119,20 @@ function ImportBody({ data, onNavigate }) {
       return
     }
 
+    // Auto-match subject from filename if matching
+    const rawName = file.name.replace(/\.csv$/i, '').trim().toLowerCase()
+    if (data.subjects && data.selectSubject) {
+      const match = data.subjects.find((s) => {
+        const subName = s.subjectName.toLowerCase()
+        const full = `${s.subjectName} - ${s.classSection}`.toLowerCase()
+        const fullUnderscore = `${s.subjectName}_${s.classSection}`.toLowerCase()
+        return rawName === full || rawName === fullUnderscore || rawName === subName
+      })
+      if (match && match.id !== data.selectedId) {
+        data.selectSubject(match.id)
+      }
+    }
+
     setBusy(true)
     setError('')
     try {
@@ -161,8 +181,8 @@ function ImportBody({ data, onNavigate }) {
             onDrop={handleDrop}
           >
             <div><Icon name="upload" size={22} /></div>
-            <h2>Upload your score sheet</h2>
-            <p>Drag and drop a CSV file here, or choose one from your computer.</p>
+            <h2>Upload Class List CSV</h2>
+            <p>Drag and drop a CSV file here, or choose one from your computer. Target: <strong>{data.classLabel}</strong></p>
 
             <input
               ref={fileInput}
