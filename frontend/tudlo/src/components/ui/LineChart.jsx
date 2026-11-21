@@ -5,6 +5,12 @@ const PAD_X = 50
 const PAD_TOP = 34
 const PAD_BOTTOM = 36
 
+// Long names like "Quiz 1 - Variables" are shortened to "Quiz 1" so the labels do not overlap
+function shortLabel(label = "") {
+  const first = String(label).split(" - ")[0];
+  return first.length > 14 ? `${first.slice(0, 13)}…` : first;
+}
+
 export function LineChart({ values = [], labels = [], color = "#0f766e" }) {
   if (values.length === 0) return null
 
