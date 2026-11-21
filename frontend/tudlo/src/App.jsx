@@ -31,7 +31,7 @@ function renderPage(page, { onNavigate, userName, teacherData }) {
     case 'Students':
       return <StudentsPage data={teacherData} />
     case 'Support':
-      return <SupportPage />
+      return <SupportPage data={teacherData} onNavigate={onNavigate} />
     case 'Users':
       return <UsersPage />
     case 'System Maintenance':
