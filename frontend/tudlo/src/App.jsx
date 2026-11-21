@@ -15,9 +15,7 @@ import StudentsPage from '@/pages/teacher/StudentsPage.jsx'
 import SupportPage from '@/pages/teacher/SupportPage.jsx'
 import UsersPage from '@/pages/admin/UsersPage.jsx'
 import SystemMaintenancePage from '@/pages/admin/SystemMaintenancePage.jsx'
-import MyProgressPage from '@/pages/student/MyProgressPage.jsx'
-import TopicsToReviewPage from '@/pages/student/TopicsToReviewPage.jsx'
-import MySubmissionsPage from '@/pages/student/MySubmissionsPage.jsx'
+import MyLearningPage from '@/pages/student/MyLearningPage.jsx'
 
 // Everything a page needs is passed in through the second argument
 function renderPage(page, { onNavigate, userName, teacherData }) {
@@ -38,12 +36,8 @@ function renderPage(page, { onNavigate, userName, teacherData }) {
       return <UsersPage />
     case 'System Maintenance':
       return <SystemMaintenancePage />
-    case 'My Progress':
-      return <MyProgressPage onNavigate={onNavigate} />
-    case 'Topics to Review':
-      return <TopicsToReviewPage />
-    case 'My Submissions':
-      return <MySubmissionsPage />
+    case 'My Learning':
+      return <MyLearningPage />
     default:
       return null
   }

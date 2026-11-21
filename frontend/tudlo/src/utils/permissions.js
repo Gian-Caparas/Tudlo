@@ -7,7 +7,7 @@ export const ROLE_RANK = Object.freeze({
 const homePages = Object.freeze({
   admin: 'Users',
   teacher: 'Dashboard',
-  student: 'My Progress',
+  student: 'My Learning',
 })
 
 export function assignableRoles(actorRole) {

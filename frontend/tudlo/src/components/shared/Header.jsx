@@ -18,8 +18,12 @@ export function Header({ role, page, userName, onLogout }) {
               ? "My learning"
               : "Tudlo Admin"}
         </span>
-        <Icon name="chevron" size={13} />
-        <b>{page}</b>
+          {role !== "student" && (
+          <>
+            <Icon name="chevron" size={13} />
+            <b>{page}</b>
+          </>
+        )}
       </div>
       <div className="user-menu">
         <Avatar name={userName} size="sm" />
