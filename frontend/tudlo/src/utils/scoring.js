@@ -1,7 +1,7 @@
 // The rules the teacher pages use
 export const rules = {
   passMark: 75,          // a student passes with an average of 75% or more
-  supportThreshold: 60,  // below 60% is red in Students and flags the student on the Dashboard
+  supportThreshold: 60,  // below 60% overall grade is red in Students and flags the student for support
   goodThreshold: 80,     // 80% and above is green in Students
 }
 
@@ -18,23 +18,46 @@ export function getPercent(record, items) {
   return (record.score / max) * 100
 }
 
-// Students who have a score below the support threshold
+// Computes a student's overall score, total max score, and overall percentage for a subject.
+export function getOverallStudentScore(studentId, scores, items) {
+  const studentScores = scores.filter((r) => r.studentId === studentId)
+  if (!studentScores.length) return null
+
+  let earned = 0
+  let max = 0
+  let completedCount = 0
+
+  studentScores.forEach((record) => {
+    const item = items.find((i) => i.name === record.assessment)
+    const itemMax = Number(item?.maxScore) || 0
+    if (record.score !== null && record.score !== undefined && itemMax > 0) {
+      earned += Number(record.score)
+      max += itemMax
+      completedCount += 1
+    }
+  })
+
+  if (!max) return null
+  const percent = (earned / max) * 100
+  return { earned, max, percent, completedCount }
+}
+
+// Students who need support based on their overall grade in the subject falling below 60%
 export function getNeedsSupport(scores, students, items) {
   const list = []
 
   students.forEach((student) => {
-    const lowest = scores
-      .filter((r) => r.studentId === student.id)
-      .map((record) => ({ record, percent: getPercent(record, items) }))
-      .filter((x) => x.percent !== null && x.percent < rules.supportThreshold)
-      .sort((a, b) => a.percent - b.percent)[0]
-
-    if (lowest) {
+    const overall = getOverallStudentScore(student.id, scores, items)
+    if (overall && overall.percent < rules.supportThreshold) {
       list.push({
         id: student.id,
         name: `${student.firstName} ${student.lastName}`,
-        detail: `${lowest.record.assessment} · ${Math.round(lowest.percent)}%`,
-        tag: 'Below Threshold',
+        overallPercent: Math.round(overall.percent * 10) / 10,
+        earned: overall.earned,
+        max: overall.max,
+        completedCount: overall.completedCount,
+        detail: `Overall: ${Math.round(overall.percent)}% (${overall.earned}/${overall.max} pts)`,
+        tag: 'Below 60%',
       })
     }
   })
