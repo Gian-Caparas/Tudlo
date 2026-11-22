@@ -1,7 +1,5 @@
 import { apiRequest } from '@/lib/apiClient.js'
 
-const encode = encodeURIComponent
-
 export const academicService = {
   // Student endpoints
   getOwnProgress() {
