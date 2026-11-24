@@ -118,11 +118,10 @@ function SupportBody({ data, onNavigate }) {
                       <td>
                         <button
                           type="button"
-                          className="btn ghost"
-                          style={{ padding: '4px 10px', fontSize: '0.825rem' }}
+                          className="btn ghost btn-sm"
                           onClick={() => onNavigate && onNavigate('Students')}
                         >
-                          View student
+                           View student
                         </button>
                       </td>
                     </tr>

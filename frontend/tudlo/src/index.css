@@ -2866,3 +2866,14 @@ tbody tr:last-child td {
 .kpi-grid-3 .kpi > small {
   font-size: 11px;
 }
+
+.btn.btn-sm {
+  height: 34px;
+  padding: 0 16px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.btn.ghost.btn-sm:hover {
+  background: #f4f7f6;
+  border-color: #b9c9c5;
+}
