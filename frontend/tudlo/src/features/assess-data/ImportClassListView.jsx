@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react'
 import { PageHeader } from '@/components/shared/PageHeader.jsx'
-import { SubjectSelect } from '@/components/shared/SubjectSelect.jsx'
 import { DataGate } from '@/components/shared/DataGate.jsx'
 import { Icon } from '@/components/ui/Icon.jsx'
 
@@ -184,7 +183,6 @@ export function ImportClassListView({ data, onNavigate }) {
         eyebrow="DATA WORKFLOW"
         title="Import Class List"
         description="Upload an Excel workbook: filename = Subject, sheet names = Sections, columns = User ID Number, Firstname, Lastname."
-        action={<SubjectSelect data={data} />}
       />
       <DataGate data={data} allowEmpty>
         <ImportBody data={data} onNavigate={onNavigate} />

@@ -1,5 +1,6 @@
 import { PageHeader } from '@/components/shared/PageHeader.jsx'
 import { DataGate } from '@/components/shared/DataGate.jsx'
+import { SubjectSelect } from '@/components/shared/SubjectSelect.jsx'
 import { Badge } from '@/components/ui/Badge.jsx'
 import { Avatar } from '@/components/ui/Avatar.jsx'
 import { Icon } from '@/components/ui/Icon.jsx'
@@ -147,6 +148,7 @@ function DashboardBody({ data, onNavigate }) {
             <LineChart
               values={performance.map((p) => p.percent)}
               labels={performance.map((p) => p.name)}
+              threshold={rules.passMark}
             />
           ) : (
             <p>No scores yet for this subject.</p>
@@ -159,9 +161,15 @@ function DashboardBody({ data, onNavigate }) {
           badge={<span className="count">{needsSupport.length}</span>}
           className="support-list"
         >
-          {needsSupport.map((s) => (
-            <SupportRow key={s.id} student={s} onOpen={() => onNavigate('Students')} />
-          ))}
+          {needsSupport.length === 0 ? (
+            <p className="support-empty">No students need support right now.</p>
+          ) : (
+            <div className="support-scroll">
+              {needsSupport.map((s) => (
+                <SupportRow key={s.id} student={s} onOpen={() => onNavigate('Students')} />
+              ))}
+            </div>
+          )}
         </SectionCard>
       </div>
 
@@ -189,6 +197,7 @@ export function DashboardView({ data, userName, onNavigate }) {
         eyebrow={data.classLabel}
         title={`${getGreeting()}, ${userName}`}
         description="Here's where your class stands today, and who may need your attention."
+        action={<SubjectSelect data={data} />}
       />
       <DataGate data={data} onNavigate={onNavigate}>
         <DashboardBody data={data} onNavigate={onNavigate} />

@@ -56,7 +56,7 @@ export function getNeedsSupport(scores, students, items) {
         earned: overall.earned,
         max: overall.max,
         completedCount: overall.completedCount,
-        detail: `Overall: ${Math.round(overall.percent)}% (${overall.earned}/${overall.max} pts)`,
+        detail: `Overall: ${overall.percent.toFixed(2)}% (${Number(overall.earned).toFixed(2)}/${Number(overall.max).toFixed(2)} pts)`,
         tag: 'Below 60%',
       })
     }

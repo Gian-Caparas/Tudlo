@@ -231,7 +231,9 @@ export function StudentsView({ data }) {
           <div className="students-scroll">
             <div
               className="students-grid"
-              style={{ gridTemplateColumns: `minmax(190px, 1.7fr) repeat(${items.length}, minmax(110px, 1fr))` }}
+              style={{
+                gridTemplateColumns: `fit-content(240px) repeat(${items.length}, 120px)`,
+              }}
             >
               <div className="col-card">
                 <div className="col-head">Student Name</div>

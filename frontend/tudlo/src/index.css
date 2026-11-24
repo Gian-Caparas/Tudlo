@@ -20,7 +20,7 @@
 @layer base {
   body {
     margin: 0;
-    min-width: 1100px;
+    min-width: 320px;
     min-height: 100vh;
     background: #f7f9f8;
   }
@@ -987,40 +987,7 @@ tbody tr:last-child td {
   font-size: 10px;
   font-weight: 700;
 }
-.support-list > button {
-  width: 100%;
-  height: 60px;
-  border: 0;
-  border-bottom: 1px solid #e8eeec;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  text-align: left;
-  padding: 0 15px;
-}
-.support-list > button:last-child {
-  border-bottom: 0;
-}
-.support-list > button:hover {
-  background: #f7faf9;
-}
-.support-list > button > span:nth-child(2) {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  flex: 1;
-}
-.support-list > button strong {
-  font-size: 10px;
-}
-.support-list > button small {
-  font-size: 8px;
-  color: #7c8a86;
-}
-.support-list > button > .icon {
-  color: #8c9995;
-}
+
 .insight-banner,
 .student-tip {
   display: flex;
@@ -2160,6 +2127,9 @@ tbody tr:last-child td {
 .col-cell.low {
   color: #c2412d;
 }
+.col-cell.mid {
+  color: #996518;
+}
 .col-cell.high {
   color: var(--teal);
 }
@@ -2300,4 +2270,511 @@ tbody tr:last-child td {
   text-align: center;
   padding: 0 8px;
   line-height: 1.25;
+}
+
+/* ================= RESPONSIVE + DASHBOARD UPGRADES ================= */
+
+/* ---- Header hamburger (hidden on PC) ---- */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.menu-btn {
+  display: none;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.menu-btn span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: #42524e;
+}
+.sidebar-backdrop {
+  display: none;
+}
+
+/* ---- Dashboard: chart ---- */
+.line-chart {
+  overflow-x: auto;
+  padding: 16px 20px 18px;
+}
+
+/* ---- Dashboard: needs-support list (scrolls when there are many students) ---- */
+.support-scroll {
+  max-height: 320px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.support-scroll > button {
+  width: 100%;
+  min-height: 60px;
+  border: 0;
+  border-bottom: 1px solid #e8eeec;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-align: left;
+  padding: 8px 15px;
+}
+.support-scroll > button:last-child {
+  border-bottom: 0;
+}
+.support-scroll > button:hover {
+  background: #f7faf9;
+}
+.support-scroll > button > span:nth-child(2) {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+.support-scroll > button strong {
+  font-size: 11px;
+}
+.support-scroll > button small {
+  font-size: 9px;
+  color: #7c8a86;
+}
+.support-scroll > button > .icon {
+  color: #8c9995;
+}
+.support-empty {
+  padding: 24px 20px;
+  font-size: 11px;
+  color: #74837f;
+  text-align: center;
+}
+
+/* ---- Subject Mapping: sideways scroll if the screen is narrow ---- */
+.mapping-cards {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  grid-template-columns: minmax(170px, 1fr) minmax(260px, 2.4fr) minmax(96px, 0.6fr);
+  padding-bottom: 6px;
+}
+.mapping-cards .col-cell {
+  white-space: nowrap;
+}
+
+/* ---- Students: names column stays visible while scrolling sideways ---- */
+.students-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+.students-grid > .col-card:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  box-shadow: 6px 0 8px -6px rgba(14, 50, 45, 0.18);
+}
+
+.search {
+  max-width: 100%;
+}
+.modal {
+  max-width: calc(100vw - 24px);
+}
+
+/* ================= Tablet + phone (1024px and below) ================= */
+@media (max-width: 1024px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+  .app-shell > main {
+    grid-column: 1;
+  }
+
+  /* sidebar slides in from the left */
+  .app-shell > aside {
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    overflow-y: auto;
+    z-index: 20;
+  }
+  .app-shell.menu-open > aside {
+    transform: translateX(0);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.25);
+  }
+  .app-shell.menu-open .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(16, 32, 29, 0.45);
+    z-index: 15;
+  }
+  .menu-btn {
+    display: flex;
+  }
+
+  .app-shell header {
+    padding: 0 16px;
+  }
+  .breadcrumb {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .page {
+    padding: 24px 20px 48px;
+  }
+
+  /* dashboard */
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ================= Small tablet + phone (760px and below) ================= */
+@media (max-width: 760px) {
+  .page-head {
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .page-head h1 {
+    font-size: 22px;
+  }
+  .page-head > :last-child:not(:first-child) {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .page-head > :last-child:not(:first-child) .btn {
+    flex: 1 1 140px;
+  }
+
+  .subject-toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .subject-select,
+  .subject-toolbar select,
+  .students-toolbar select {
+    width: 100%;
+  }
+  .toolbar-note {
+    width: 100%;
+  }
+
+  .students-toolbar {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px;
+  }
+  .students-toolbar .search {
+    width: 100%;
+    margin-left: 0;
+    height: 40px;
+  }
+  .students-toolbar .btn {
+    width: 100%;
+  }
+}
+
+/* ================= Phone (640px and below) ================= */
+@media (max-width: 640px) {
+  .page {
+    padding: 18px 14px 40px;
+  }
+
+  /* header: show only the page name and the avatar + logout */
+  .breadcrumb > span:not(:only-child),
+  .breadcrumb > .icon {
+    display: none;
+  }
+  .user-menu > div,
+  .user-menu .badge {
+    display: none;
+  }
+
+  /* dashboard */
+  .kpi-grid {
+    gap: 10px;
+  }
+  .kpi {
+    padding: 14px;
+    min-height: 110px;
+  }
+  .kpi > strong {
+    font-size: 22px;
+  }
+  .section-head {
+    padding: 14px 16px;
+  }
+  .line-chart {
+    padding: 12px 12px 14px;
+  }
+  .support-scroll {
+    max-height: 280px;
+  }
+  .insight-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .insight-banner button {
+    padding: 0;
+  }
+
+  /* import class list */
+  .stepper {
+    margin-bottom: 18px;
+  }
+ 
+  .upload-zone {
+    margin: 14px;
+    min-height: 240px;
+    padding: 20px 14px;
+    text-align: center;
+  }
+  .upload-zone p {
+    font-size: 11px;
+  }
+  .upload-zone small {
+    font-size: 10px;
+    text-align: center;
+  }
+  .file-hint {
+    flex-wrap: wrap;
+    padding: 12px 14px;
+  }
+  .file-hint strong {
+    width: 100%;
+    margin-right: 0;
+    font-size: 10px;
+  }
+  .file-hint span {
+    font-size: 10px;
+    white-space: normal;
+  }
+  .done-card {
+    padding: 32px 18px;
+  }
+  .done-card > div:last-child {
+    flex-direction: column;
+  }
+  .done-card > div:last-child .btn {
+    width: 100%;
+  }
+
+  /* modals */
+  .modal {
+    width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-head {
+    padding: 18px;
+  }
+  .modal-body {
+    padding: 18px;
+    overflow-y: auto;
+  }
+  .modal-footer {
+    padding: 12px 18px;
+    flex-wrap: wrap;
+  }
+
+  /* 16px inputs so iPhones don't zoom in when you tap them */
+  .col-cell input,
+  .students-toolbar .search input,
+  .subject-select,
+  .modal input,
+  .modal textarea,
+  .modal select {
+    font-size: 16px;
+  }
+  .subject-select {
+    height: 42px;
+  }
+  .btn {
+    height: 42px;
+  }
+}
+
+/* very small phones: KPI cards stack */
+@media (max-width: 420px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  .kpi {
+    min-height: 0;
+  }
+}
+
+/* ---- Import Class List: stepper (new look) ---- */
+.stepper {
+  max-width: 820px;
+  margin: 0 auto 25px;
+}
+.stepper button {
+  cursor: default;
+  gap: 12px;
+}
+.stepper button:not(:last-child) {
+  flex: 1;
+}
+.stepper button:last-child {
+  flex: none;
+}
+
+/* the line between the steps: it grows to fill the free space */
+.stepper button:not(:last-child):after {
+  position: static;
+  flex: 1;
+  margin: 0 18px;
+  height: 1px;
+  background: #dfe7e4;
+}
+
+/* rounded square badge */
+.stepper button > i {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  flex: none;
+}
+
+/* text */
+.stepper button span {
+  font-size: 13px;
+  font-weight: 500;
+  color: #4d5d59;
+}
+.stepper button small {
+  font-size: 9px;
+  letter-spacing: 1.2px;
+  font-weight: 500;
+  color: #8a9894;
+}
+.stepper button.active span {
+  color: var(--teal);
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .stepper button:not(:last-child):after {
+    margin: 0 10px;
+  }
+  .stepper button span {
+    font-size: 12px;
+  }
+}
+
+.done-card {
+  max-width: 820px;
+}
+
+/* ---- Students: score cell (number + "/ max" side by side) ---- */
+.col-cell.score {
+  gap: 6px;
+}
+.col-cell.score input.score-edit {
+  width: 64px;
+  flex: none;
+  text-align: right;
+}
+.col-cell.score .score-max {
+  white-space: nowrap;
+  font-size: 11px;
+  color: #8a9894;
+}
+
+/* ---- Phones/tablets: the closed sidebar must not peek out on the left ---- */
+@media (max-width: 1024px) {
+  .app-shell > aside {
+    visibility: hidden;
+    transition: transform 0.25s ease, visibility 0s 0.25s;
+  }
+  .app-shell.menu-open > aside {
+    visibility: visible;
+    transition: transform 0.25s ease;
+  }
+}
+
+/* ---- Students: compact score boxes + sideways scroll ---- */
+.students-scroll {
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+
+.col-cell.score {
+  padding: 0 8px;
+  gap: 5px;
+}
+.col-cell.score input.score-edit {
+  width: 48px;
+  text-align: right;
+}
+
+.students-grid .col-head {
+  padding: 0 8px;
+  font-size: 10px;
+  line-height: 1.25;
+  overflow: hidden;
+  word-break: break-word;
+  text-align: center;
+}
+
+/* ---- Students: name column fits its content, left aligned ---- */
+.students-grid {
+  width: max-content;
+  min-width: 0;
+}
+.students-grid > .col-card:first-child .col-head {
+  align-items: flex-start;
+  text-align: left;
+  padding: 0 16px;
+}
+.students-grid > .col-card:first-child .col-cell {
+  white-space: nowrap;
+}
+
+/* ---- Subject Mapping: compact table ---- */
+.mapping-cards {
+  width: 100%;
+  grid-template-columns: max-content 1fr max-content;
+  gap: 12px;
+}
+
+/* Assessment Item + Max Score: centered, with a little side padding */
+.mapping-cards .col-card:nth-child(1) .col-head,
+.mapping-cards .col-card:nth-child(1) .col-cell,
+.mapping-cards .col-card:nth-child(3) .col-head,
+.mapping-cards .col-card:nth-child(3) .col-cell {
+  padding-left: 28px;
+  padding-right: 28px;
+}
+
+/* ---- Students: only the score number is colored ---- */
+.col-cell.score.low input.score-edit {
+  color: #c2412d;
+  font-weight: 700;
+}
+.col-cell.score.high input.score-edit {
+  color: var(--teal);
+  font-weight: 700;
+}
+.col-cell.score.low .score-max,
+.col-cell.score.high .score-max {
+  color: #8a9894;
 }

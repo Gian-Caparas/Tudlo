@@ -77,7 +77,7 @@ function AddAssessmentModal({ data, onClose }) {
         </div>
       }
     >
-      <form id="add-assessment-form" onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <form id="add-assessment-form" className="form-grid" onSubmit={handleAdd}>
         <label>
           Assessment Item Name
           <input
