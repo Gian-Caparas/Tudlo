@@ -2804,7 +2804,7 @@ tbody tr:last-child td {
 @media (max-width: 640px) {
   .login-panel {
     padding: 24px 16px;
-    place-items: start center;
+    place-items: center;
   }
   .login-card h2 {
     font-size: 26px;
