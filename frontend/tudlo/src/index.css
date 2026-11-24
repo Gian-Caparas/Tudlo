@@ -2778,3 +2778,18 @@ tbody tr:last-child td {
 .col-cell.score.high .score-max {
   color: #8a9894;
 }
+
+@media (max-width: 900px) {
+  .login-page {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100vh;
+  }
+  .login-brand {
+    display: none;
+  }
+  .mobile-logo {
+    display: block;
+    margin-bottom: 28px;
+  }
+}
