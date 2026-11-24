@@ -2792,4 +2792,11 @@ tbody tr:last-child td {
     display: block;
     margin-bottom: 28px;
   }
+
+    .login-card {
+    width: 100%;
+    max-width: 390px;
+  }
 }
+
+
