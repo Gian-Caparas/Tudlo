@@ -126,8 +126,8 @@ export function MyLearningView() {
         </p>
       </div>
 
-      <div className="grid overflow-hidden rounded-xl border border-slate-200 bg-white md:grid-cols-[300px_1fr]">
-        <div className="border-b border-slate-200 p-8 md:border-b-0 md:border-r">
+      <div className="grid overflow-hidden rounded-xl border border-slate-200 bg-white sm:grid-cols-[260px_1fr]">
+        <div className="border-b border-slate-200 p-5 sm:border-b-0 sm:border-r sm:p-8">
           <p className="text-[10px] font-medium uppercase tracking-widest text-slate-500">
             Overall average
           </p>
@@ -140,7 +140,7 @@ export function MyLearningView() {
         </div>
 
         {latestWin && (
-          <div className="p-8">
+          <div className="p-5 sm:p-8">
             <p className="text-[10px] font-medium uppercase tracking-widest text-slate-500">
               Your latest win
             </p>
