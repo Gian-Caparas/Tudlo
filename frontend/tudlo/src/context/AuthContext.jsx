@@ -46,6 +46,7 @@ export function AuthProvider({ children }) {
   const validatedToken = useRef(null)
 
   const logout = useCallback((message = '') => {
+    validatedToken.current = null
     localStorage.removeItem(SESSION_KEY)
     setSession(null)
     setAuthLoading(false)
@@ -78,7 +79,6 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (!session?.token) return undefined
     if (validatedToken.current === session.token) return undefined
-    validatedToken.current = session.token
     let active = true
     let timedOut = false
     const controller = new AbortController()
@@ -90,6 +90,7 @@ export function AuthProvider({ children }) {
     authService.getCurrentUser(session.token, { signal: controller.signal })
       .then((currentUser) => {
         if (!active) return
+        validatedToken.current = session.token
         const fullName = `${currentUser.firstName} ${currentUser.lastName}`.trim()
         const nextSession = {
           ...session,
@@ -109,6 +110,7 @@ export function AuthProvider({ children }) {
       })
       .catch((error) => {
         if (!active) return
+        validatedToken.current = session.token
         if (error.status !== 401) setSessionError(error.message)
         if (timedOut) {
           setSessionError('Session verification timed out. Check that the backend is running and try again.')
