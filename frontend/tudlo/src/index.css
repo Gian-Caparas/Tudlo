@@ -2841,3 +2841,28 @@ tbody tr:last-child td {
     grid-template-columns: 1fr;
   }
 }
+
+.kpi-grid-3 {
+  gap: 18px;
+}
+.kpi-grid-3 .kpi {
+  padding: 22px 24px;
+  min-height: 140px;
+}
+.kpi-grid-3 .kpi.attention {
+  border-top: 1px solid var(--line);
+}
+.kpi-grid-3 .kpi-top {
+  font-size: 13px;
+}
+.kpi-grid-3 .kpi-top div {
+  width: 32px;
+  height: 32px;
+}
+.kpi-grid-3 .kpi > strong {
+  font-size: 28px;
+  margin: 14px 0 8px;
+}
+.kpi-grid-3 .kpi > small {
+  font-size: 11px;
+}
