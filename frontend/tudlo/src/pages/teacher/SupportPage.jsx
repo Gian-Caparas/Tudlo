@@ -31,7 +31,7 @@ function SupportBody({ data, onNavigate }) {
 
   return (
     <>
-      <section className="kpi-grid">
+      <section className="kpi-grid kpi-grid-3">
         <div className="card kpi attention">
           <div className="kpi-top">
             <span>Students Needing Support</span>

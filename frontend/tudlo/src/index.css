@@ -2831,3 +2831,13 @@ tbody tr:last-child td {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ================= Support: balanced KPI row ================= */
+.kpi-grid.kpi-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 640px) {
+  .kpi-grid.kpi-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
