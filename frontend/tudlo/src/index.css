@@ -2779,6 +2779,8 @@ tbody tr:last-child td {
   color: #8a9894;
 }
 
+
+/* ================= Login page: responsive ================= */
 @media (max-width: 900px) {
   .login-page {
     grid-template-columns: 1fr;
@@ -2796,6 +2798,19 @@ tbody tr:last-child td {
     .login-card {
     width: 100%;
     max-width: 390px;
+  }
+}
+
+@media (max-width: 640px) {
+  .login-panel {
+    padding: 24px 16px;
+    place-items: start center;
+  }
+  .login-card h2 {
+    font-size: 26px;
+  }
+  .demo-buttons {
+    grid-template-columns: 1fr;
   }
 }
 
