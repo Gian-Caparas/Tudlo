@@ -2814,4 +2814,20 @@ tbody tr:last-child td {
   }
 }
 
+/* ================= Dashboard: responsive ================= */
+.dashboard-grid {
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+}
+.support-list {
+  min-width: 0;
+}
+.page-head {
+  gap: 16px;
+  flex-wrap: wrap;
+}
 
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
