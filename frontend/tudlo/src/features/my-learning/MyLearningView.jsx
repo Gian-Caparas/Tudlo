@@ -210,7 +210,7 @@ export function MyLearningView() {
         <span className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-sm bg-orange-400" /> Needs focus under 60%
         </span>
-        <div className="ml-auto">
+        <div className="sm:ml-auto">
           <p>Strongest: {strongest?.name ?? 'None'}</p>
           <p>Focus area: {focusTopics.map((t) => t.name).join(' and ') || 'None'}</p>
         </div>
@@ -292,10 +292,10 @@ export function MyLearningView() {
       </section>
 
       {latestWin && (
-        <section className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-6">
+        <section className="flex flex-col items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-6">
           <div className="flex items-center gap-4">
             <svg
-              className="h-5 w-5 text-teal-700"
+              className="h-5 w-5 shrink-0 text-teal-700"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -315,7 +315,7 @@ export function MyLearningView() {
             </div>
           </div>
 
-          <p className="text-2xl font-semibold text-teal-700">
+          <p className="pl-9 text-2xl font-semibold text-teal-700 sm:pl-0">
             {((latestWin.score / latestWin.maxScore) * 100).toFixed(1)}%
           </p>
         </section>
