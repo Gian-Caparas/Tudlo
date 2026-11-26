@@ -961,6 +961,12 @@ tbody tr:last-child td {
 .chart-card {
   min-width: 0;
 }
+.chart-card > p{
+  padding: 24px 20px;
+  font-size: 11px; 
+  color: #74837f;
+  text-align: center;
+}
 .line-chart {
   padding: 15px 20px 16px;
 }
@@ -2352,7 +2358,7 @@ tbody tr:last-child td {
 .support-scroll > button > .icon {
   color: #8c9995;
 }
-.support-empty {
+.support-empty  {
   padding: 24px 20px;
   font-size: 11px;
   color: #74837f;
