@@ -175,10 +175,11 @@ function MappingForm({ data, onOpenAdd }) {
           <div className="col-head">Learning Outcome</div>
           {draft.map((item) => (
             <div className="col-cell left" key={item.id}>
-              <input
-                type="text"
+              <textarea
                 value={item.outcome}
                 placeholder="Add a learning outcome"
+                rows={2}
+                wrap="soft"
                 aria-label={`Learning outcome for ${item.name}`}
                 onChange={(e) => handleChange(item.id, 'outcome', e.target.value)}
               />

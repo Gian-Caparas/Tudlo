@@ -2149,10 +2149,29 @@ tbody tr:last-child td {
   color: #35423f;
 }
 .col-cell input:hover,
-.col-cell input:focus {
+.col-cell input:focus,
+.col-cell textarea:hover,
+.col-cell textarea:focus {
   border-color: #d9e2df;
   background: #fff;
   outline: 0;
+}
+.col-cell textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.2;
+  color: #35423f;
+  resize: none;
+  overflow: auto;
+  overflow-wrap: anywhere;
 }
 .col-cell input.max {
   width: 72px;
@@ -2882,4 +2901,20 @@ tbody tr:last-child td {
 .btn.ghost.btn-sm:hover {
   background: #f4f7f6;
   border-color: #b9c9c5;
+}
+
+@media (max-width: 760px) {
+  .mapping-cards {
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
+  }
+  .mapping-cards .col-cell {
+    height: 64px;
+    white-space: normal;
+  }
+  .mapping-cards .col-cell textarea {
+    height: 56px;
+  }
+  .mapping-cards .col-cell input.max {
+    font-size: 13px;
+  }
 }
