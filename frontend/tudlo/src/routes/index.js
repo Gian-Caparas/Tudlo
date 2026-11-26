@@ -1,7 +1,6 @@
 export const navigationByRole = {
   admin: [
     { label: "Users", icon: "users" },
-    { label: "System Maintenance", icon: "settings" },
   ],
   teacher: [
     { label: "Dashboard", icon: "chart" },

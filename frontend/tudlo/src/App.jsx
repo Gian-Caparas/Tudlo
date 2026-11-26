@@ -14,7 +14,6 @@ import LearningGapsPage from '@/pages/teacher/LearningGapsPage.jsx'
 import StudentsPage from '@/pages/teacher/StudentsPage.jsx'
 import SupportPage from '@/pages/teacher/SupportPage.jsx'
 import UsersPage from '@/pages/admin/UsersPage.jsx'
-import SystemMaintenancePage from '@/pages/admin/SystemMaintenancePage.jsx'
 import MyLearningPage from '@/pages/student/MyLearningPage.jsx'
 
 // Everything a page needs is passed in through the second argument
@@ -34,8 +33,6 @@ function renderPage(page, { onNavigate, userName, teacherData }) {
       return <SupportPage data={teacherData} onNavigate={onNavigate} />
     case 'Users':
       return <UsersPage />
-    case 'System Maintenance':
-      return <SystemMaintenancePage />
     case 'My Learning':
       return <MyLearningPage />
     default:
