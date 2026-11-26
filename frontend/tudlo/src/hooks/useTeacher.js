@@ -130,20 +130,36 @@ export function useTeacherData(){
     }
   }
 
-  // Saves the changed learning outcomes and max scores of the chosen subject
+  // Saves the changed assessment names, learning outcomes, and max scores of the chosen subject
   async function saveMapping(draft) {
     const subject = { subjectName, classSection }
     const changed = draft.filter((d) => {
       const old = items.find((i) => i.id === d.id)
-      return old && (old.outcome !== d.outcome || Number(old.maxScore) !== Number(d.maxScore))
+      return (
+        old &&
+        (old.name !== d.name.trim() ||
+          old.outcome !== d.outcome.trim() ||
+          Number(old.maxScore) !== Number(d.maxScore))
+      )
     })
 
     const failed = []
     const toSave = []
     changed.forEach((item) => {
-      if (item.outcome.trim() === '') failed.push({ name: item.name, message: 'Learning outcome is required' })
-      else if (!(Number(item.maxScore) > 0)) failed.push({ name: item.name, message: 'Max score must be more than 0' })
-      else toSave.push(item)
+      const trimmedName = item.name.trim()
+      if (trimmedName === '') {
+        failed.push({ name: item.name || 'Item', message: 'Assessment item name is required' })
+      } else if (
+        draft.some((other) => other.id !== item.id && other.name.trim().toLowerCase() === trimmedName.toLowerCase())
+      ) {
+        failed.push({ name: trimmedName, message: 'Duplicate assessment item name' })
+      } else if (item.outcome.trim() === '') {
+        failed.push({ name: trimmedName, message: 'Learning outcome is required' })
+      } else if (!(Number(item.maxScore) > 0)) {
+        failed.push({ name: trimmedName, message: 'Max score must be more than 0' })
+      } else {
+        toSave.push({ ...item, name: trimmedName })
+      }
     })
 
     const results = await Promise.allSettled(toSave.map((item) => teacherService.updateAssessment(item, subject)))

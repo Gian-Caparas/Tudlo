@@ -20,7 +20,8 @@ function getExample(items, scores, students) {
   return `${first} ${student.firstName} ${student.lastName}'s score of ${record.score} / ${item.maxScore} in Students equals ${Math.round(percent)}%.`
 }
 
-function AddAssessmentModal({ data, onClose }) {
+// Modal for adding a new assessment item
+function AddAssessmentModal({ data, onClose, onNotice }) {
   const [name, setName] = useState('')
   const [outcome, setOutcome] = useState('')
   const [maxScore, setMaxScore] = useState('')
@@ -55,6 +56,7 @@ function AddAssessmentModal({ data, onClose }) {
     setError('')
     try {
       await data.addAssessment({ name: trimmedName, outcome: trimmedOutcome, maxScore: numMax })
+      onNotice?.({ type: 'success', text: `"${trimmedName}" added to mapping` })
       onClose()
     } catch (err) {
       setError(err.message || 'Failed to add assessment item.')
@@ -65,7 +67,7 @@ function AddAssessmentModal({ data, onClose }) {
   return (
     <Modal
       title="Add Assessment Item"
-      onClose={onClose}
+      onClose={saving ? () => {} : onClose}
       footer={
         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', width: '100%' }}>
           <button type="button" className="btn ghost" onClick={onClose} disabled={saving}>
@@ -116,11 +118,57 @@ function AddAssessmentModal({ data, onClose }) {
   )
 }
 
-// The table and the Save logic. It is only shown once the data is ready.
-function MappingForm({ data, onOpenAdd }) {
+// Confirmation modal before deleting an assessment item
+function DeleteAssessmentModal({ item, onConfirm, onClose }) {
+  const [deleting, setDeleting] = useState(false)
+  const [error, setError] = useState('')
+
+  async function handleConfirm() {
+    setDeleting(true)
+    setError('')
+    try {
+      await onConfirm(item)
+      onClose()
+    } catch (err) {
+      setError(err.message || 'Could not delete assessment item.')
+      setDeleting(false)
+    }
+  }
+
+  return (
+    <Modal
+      title="Delete Assessment Item"
+      onClose={deleting ? () => {} : onClose}
+      footer={
+        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', width: '100%' }}>
+          <button type="button" className="btn ghost" onClick={onClose} disabled={deleting}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="btn primary"
+            style={{ background: '#b42318', borderColor: '#b42318' }}
+            onClick={handleConfirm}
+            disabled={deleting}
+          >
+            {deleting ? 'Deleting…' : 'Delete Item'}
+          </button>
+        </div>
+      }
+    >
+      <p className="modal-copy">
+        Are you sure you want to delete <strong>{item.name}</strong>? Any recorded student scores for this assessment will also be removed.
+      </p>
+      {error && <p className="form-error" role="alert">{error}</p>}
+    </Modal>
+  )
+}
+
+// The table and the Save/Delete logic. It is only shown once the data is ready.
+function MappingForm({ data, onOpenAdd, message, setMessage }) {
   const [draft, setDraft] = useState(data.items)
-  const [message, setMessage] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [deletingItem, setDeletingItem] = useState(null)
 
   useEffect(() => {
     setDraft(data.items)
@@ -150,6 +198,11 @@ function MappingForm({ data, onOpenAdd }) {
     setSaving(false)
   }
 
+  async function handleDelete(item) {
+    await data.deleteAssessment(item.id)
+    setMessage({ type: 'success', text: `"${item.name}" deleted` })
+  }
+
   if (draft.length === 0) {
     return (
       <div className="card" style={{ textAlign: 'center', padding: '32px 16px' }}>
@@ -162,64 +215,105 @@ function MappingForm({ data, onOpenAdd }) {
   }
 
   return (
-    <form id="mapping-form" onSubmit={handleSubmit}>
-      <div className="mapping-cards">
-        <div className="col-card">
-          <div className="col-head">Assessment Item</div>
-          {draft.map((item) => (
-            <div className="col-cell" key={item.id}>{item.name}</div>
-          ))}
+    <>
+      <form id="mapping-form" onSubmit={handleSubmit}>
+        <div className="mapping-cards mapping-cards-4">
+          {/* Editable Assessment Item Name */}
+          <div className="col-card">
+            <div className="col-head">Assessment Item</div>
+            {draft.map((item) => (
+              <div className="col-cell" key={item.id}>
+                <input
+                  type="text"
+                  className="item-name-input"
+                  value={item.name}
+                  placeholder="Assessment name"
+                  aria-label={`Assessment item name for ${item.name}`}
+                  onChange={(e) => handleChange(item.id, 'name', e.target.value)}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Editable Learning Outcome */}
+          <div className="col-card">
+            <div className="col-head">Learning Outcome</div>
+            {draft.map((item) => (
+              <div className="col-cell left" key={item.id}>
+                <textarea
+                  value={item.outcome}
+                  placeholder="Add a learning outcome"
+                  rows={2}
+                  wrap="soft"
+                  aria-label={`Learning outcome for ${item.name}`}
+                  onChange={(e) => handleChange(item.id, 'outcome', e.target.value)}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Editable Max Score */}
+          <div className="col-card">
+            <div className="col-head">Max Score</div>
+            {draft.map((item) => (
+              <div className="col-cell" key={item.id}>
+                <input
+                  type="number"
+                  min="1"
+                  step="any"
+                  className="max"
+                  value={item.maxScore}
+                  aria-label={`Max score for ${item.name}`}
+                  onChange={(e) => handleChange(item.id, 'maxScore', e.target.value)}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Delete Action Column */}
+          <div className="col-card">
+            <div className="col-head">Actions</div>
+            {draft.map((item) => (
+              <div className="col-cell" key={item.id}>
+                <button
+                  type="button"
+                  className="icon-delete-btn"
+                  title={`Delete ${item.name}`}
+                  aria-label={`Delete ${item.name}`}
+                  onClick={() => setDeletingItem(item)}
+                >
+                  <Icon name="trash" size={15} />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="col-card">
-          <div className="col-head">Learning Outcome</div>
-          {draft.map((item) => (
-            <div className="col-cell left" key={item.id}>
-              <textarea
-                value={item.outcome}
-                placeholder="Add a learning outcome"
-                rows={2}
-                wrap="soft"
-                aria-label={`Learning outcome for ${item.name}`}
-                onChange={(e) => handleChange(item.id, 'outcome', e.target.value)}
-              />
-            </div>
-          ))}
-        </div>
+        <p className="mapping-note">{getExample(draft, data.scores, data.students)}</p>
 
-        <div className="col-card">
-          <div className="col-head">Max Score</div>
-          {draft.map((item) => (
-            <div className="col-cell" key={item.id}>
-              <input
-                type="number"
-                min="1"
-                step="any"
-                className="max"
-                value={item.maxScore}
-                aria-label={`Max score for ${item.name}`}
-                onChange={(e) => handleChange(item.id, 'maxScore', e.target.value)}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
+        {message?.type === 'error' && <p className="form-error" role="alert">{message.text}</p>}
+        {message?.type === 'success' && (
+          <div className="toast">
+            <Icon name="check" size={16} /> {message.text}
+          </div>
+        )}
+        {saving && <p className="mapping-note">Saving…</p>}
+      </form>
 
-      <p className="mapping-note">{getExample(draft, data.scores, data.students)}</p>
-
-      {message?.type === 'error' && <p className="form-error" role="alert">{message.text}</p>}
-      {message?.type === 'success' && (
-        <div className="toast">
-          <Icon name="check" size={16} /> {message.text}
-        </div>
+      {deletingItem && (
+        <DeleteAssessmentModal
+          item={deletingItem}
+          onConfirm={handleDelete}
+          onClose={() => setDeletingItem(null)}
+        />
       )}
-      {saving && <p className="mapping-note">Saving…</p>}
-    </form>
+    </>
   )
 }
 
 export function SubjectMappingView({ data }) {
   const [showAddModal, setShowAddModal] = useState(false)
+  const [message, setMessage] = useState(null)
 
   return (
     <div>
@@ -255,11 +349,20 @@ export function SubjectMappingView({ data }) {
       </div>
 
       <DataGate data={data}>
-        <MappingForm data={data} onOpenAdd={() => setShowAddModal(true)} />
+        <MappingForm
+          data={data}
+          onOpenAdd={() => setShowAddModal(true)}
+          message={message}
+          setMessage={setMessage}
+        />
       </DataGate>
 
       {showAddModal && (
-        <AddAssessmentModal data={data} onClose={() => setShowAddModal(false)} />
+        <AddAssessmentModal
+          data={data}
+          onNotice={setMessage}
+          onClose={() => setShowAddModal(false)}
+        />
       )}
     </div>
   )

@@ -2858,14 +2858,39 @@ tbody tr:last-child td {
   grid-template-columns: max-content 1fr max-content;
   gap: 12px;
 }
+.mapping-cards.mapping-cards-4 {
+  grid-template-columns: minmax(170px, 0.9fr) minmax(260px, 2.2fr) max-content max-content;
+}
 
-/* Assessment Item + Max Score: centered, with a little side padding */
+/* Assessment Item + Max Score + Actions: centered, with a little side padding */
 .mapping-cards .col-card:nth-child(1) .col-head,
 .mapping-cards .col-card:nth-child(1) .col-cell,
 .mapping-cards .col-card:nth-child(3) .col-head,
-.mapping-cards .col-card:nth-child(3) .col-cell {
-  padding-left: 28px;
-  padding-right: 28px;
+.mapping-cards .col-card:nth-child(3) .col-cell,
+.mapping-cards .col-card:nth-child(4) .col-head,
+.mapping-cards .col-card:nth-child(4) .col-cell {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+.col-cell input.item-name-input {
+  text-align: center;
+  font-weight: 600;
+}
+.icon-delete-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: #7c8a86;
+  display: grid;
+  place-items: center;
+  transition: 0.15s ease;
+}
+.icon-delete-btn:hover {
+  background: #fae9e6;
+  border-color: #f2cbc6;
+  color: #b42318;
 }
 
 /* ---- Students: only the score number is colored ---- */
@@ -2984,6 +3009,9 @@ tbody tr:last-child td {
 @media (max-width: 760px) {
   .mapping-cards {
     grid-template-columns: max-content minmax(0, 1fr) max-content;
+  }
+  .mapping-cards.mapping-cards-4 {
+    grid-template-columns: minmax(150px, 0.9fr) minmax(220px, 1.8fr) max-content max-content;
   }
   .mapping-cards .col-cell {
     height: 64px;

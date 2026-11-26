@@ -4,6 +4,7 @@ import com.csit321G6.groufings.tudlo.common.CrudService;
 import com.csit321G6.groufings.tudlo.common.exception.ConflictException;
 import com.csit321G6.groufings.tudlo.entity.*;
 import com.csit321G6.groufings.tudlo.dto.AssessmentDto;
+import com.csit321G6.groufings.tudlo.repository.ActivityRepository;
 import com.csit321G6.groufings.tudlo.repository.AssessmentRepository;
 import com.csit321G6.groufings.tudlo.repository.ClassListRepository;
 import com.csit321G6.groufings.tudlo.security.AccessPolicy;
@@ -17,16 +18,19 @@ import java.util.List;
 public class AssessmentService extends CrudService<Assessment, AssessmentDto.Request, AssessmentDto.Response> {
 
     private final AssessmentRepository assessmentRepository;
+    private final ActivityRepository activityRepository;
     private final SubjectOfferingService offeringService;
     private final ClassListRepository classListRepository;
     private final AccessPolicy accessPolicy;
 
     public AssessmentService(
             AssessmentRepository assessmentRepository,
+            ActivityRepository activityRepository,
             SubjectOfferingService offeringService,
             ClassListRepository classListRepository,
             AccessPolicy accessPolicy) {
         this.assessmentRepository = assessmentRepository;
+        this.activityRepository = activityRepository;
         this.offeringService = offeringService;
         this.classListRepository = classListRepository;
         this.accessPolicy = accessPolicy;
@@ -81,6 +85,11 @@ public class AssessmentService extends CrudService<Assessment, AssessmentDto.Req
     @Override
     protected void beforeDelete(Assessment existing) {
         accessPolicy.requireOfferingWriteAccess(existing.getOffering());
+        List<Activity> activities = activityRepository.findByAssessmentId(existing.getId());
+        if (!activities.isEmpty()) {
+            activityRepository.deleteAll(activities);
+            activityRepository.flush();
+        }
     }
 
     @Override
