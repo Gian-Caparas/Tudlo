@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@SuppressWarnings("null")
 public class SubjectOfferingService {
 
     private final SubjectOfferingRepository offeringRepository;
@@ -69,7 +70,7 @@ public class SubjectOfferingService {
 
     @Transactional
     public SubjectOfferingDto.Response create(SubjectOfferingDto.Request request) {
-        Long targetTeacherId = resolveTargetTeacherId(request.teacherId());
+        Long targetTeacherId = java.util.Objects.requireNonNull(resolveTargetTeacherId(request.teacherId()), "Teacher ID is required");
         Teacher teacher = teacherRepository.findById(targetTeacherId)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher", targetTeacherId));
 
@@ -93,7 +94,7 @@ public class SubjectOfferingService {
 
     @Transactional
     public void delete(Long offeringId) {
-        SubjectOffering offering = getOfferingEntity(offeringId);
+        SubjectOffering offering = java.util.Objects.requireNonNull(getOfferingEntity(offeringId));
         accessPolicy.requireOfferingWriteAccess(offering);
         offeringRepository.delete(offering);
         offeringRepository.flush();
@@ -114,8 +115,9 @@ public class SubjectOfferingService {
     }
 
     public SubjectOffering getOfferingEntity(Long offeringId) {
-        return offeringRepository.findById(offeringId)
-                .orElseThrow(() -> new ResourceNotFoundException("SubjectOffering", offeringId));
+        Long id = java.util.Objects.requireNonNull(offeringId, "Offering ID is required");
+        return offeringRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("SubjectOffering", id));
     }
 
     public SubjectOffering resolveOffering(Long offeringId, String subjectName, String classSection) {
@@ -182,7 +184,7 @@ public class SubjectOfferingService {
             return offeringRepository
                     .findByTeacherIdAndSubjectSubjectNameIgnoreCaseAndSectionSectionNameIgnoreCase(
                             teacher.getId(), subj, sect)
-                    .map(List::of)
+                    .map(o -> List.of(o))
                     .orElseGet(() -> {
                         List<SubjectOffering> others = offeringRepository
                                 .findBySubjectSubjectNameIgnoreCaseAndSectionSectionNameIgnoreCase(subj, sect);

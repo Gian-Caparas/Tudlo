@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
+@SuppressWarnings("null")
 public class AccessPolicy {
 
     private final UserRepository userRepository;
@@ -74,7 +75,7 @@ public class AccessPolicy {
         User user = requireCurrentUser();
         if (user.getUserType() == UserType.TEACHER) {
             return teacherRepository.findByUserId(user.getId())
-                    .map(Teacher::getId)
+                    .map(t -> t.getId())
                     .orElseThrow(() -> new ForbiddenException("Teacher profile not found for current user"));
         }
         return null;
@@ -146,7 +147,8 @@ public class AccessPolicy {
             return;
         }
         if (user.getUserType() == UserType.STUDENT) {
-            if (!user.getUserIdNumber().equalsIgnoreCase(studentId)) {
+            String currentStudentId = java.util.Objects.requireNonNull(user.getUserIdNumber(), "Student ID is required");
+            if (!currentStudentId.equalsIgnoreCase(studentId)) {
                 throw new ForbiddenException("Students may only access their own records");
             }
             return;

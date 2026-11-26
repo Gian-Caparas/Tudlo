@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @param <Req> request DTO type
  * @param <Res> response DTO type
  */
+@SuppressWarnings("null")
 public abstract class CrudService<E, Req, Res> {
 
     protected abstract JpaRepository<E, Long> repository();

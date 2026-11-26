@@ -2,9 +2,6 @@ package com.csit321G6.groufings.tudlo.controller;
 
 import com.csit321G6.groufings.tudlo.config.JwtUtil;
 import com.csit321G6.groufings.tudlo.dto.AuthDto;
-import com.csit321G6.groufings.tudlo.entity.Admin;
-import com.csit321G6.groufings.tudlo.entity.Student;
-import com.csit321G6.groufings.tudlo.entity.Teacher;
 import com.csit321G6.groufings.tudlo.entity.User;
 import com.csit321G6.groufings.tudlo.repository.AdminRepository;
 import com.csit321G6.groufings.tudlo.repository.StudentRepository;
@@ -22,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@SuppressWarnings("null")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -57,6 +55,7 @@ public class AuthController {
 
         String token = jwtUtil.generateToken(user.getUserIdNumber(), user.getUserType().name(), user.getId());
         Object profileId = resolveProfileId(user);
+        String fullName = user.getFirstName() + " " + user.getLastName();
 
         return ResponseEntity.ok(new AuthDto.LoginResponse(
                 token,
@@ -65,7 +64,7 @@ public class AuthController {
                 user.getId(),
                 profileId,
                 user.getUserType().name(),
-                user.getFirstName() + " " + user.getLastName(),
+                fullName,
                 user.getFirstName(),
                 user.getLastName(),
                 user.getUserIdNumber()
@@ -98,12 +97,13 @@ public class AuthController {
     }
 
     private Object resolveProfileId(User user) {
+        String studentId = java.util.Objects.requireNonNull(user.getUserIdNumber(), "User ID number is required");
         return switch (user.getUserType()) {
-            case ADMIN -> adminRepository.findByUserId(user.getId()).map(Admin::getId).orElse(null);
-            case TEACHER -> teacherRepository.findByUserId(user.getId()).map(Teacher::getId).orElse(null);
-            case STUDENT -> studentRepository.findById(user.getUserIdNumber())
-                    .map(Student::getStudentId)
-                    .orElse(user.getUserIdNumber());
+            case ADMIN -> adminRepository.findByUserId(user.getId()).map(a -> a.getId()).orElse(null);
+            case TEACHER -> teacherRepository.findByUserId(user.getId()).map(t -> t.getId()).orElse(null);
+            case STUDENT -> studentRepository.findById(studentId)
+                    .map(s -> s.getStudentId())
+                    .orElse(studentId);
         };
     }
 }

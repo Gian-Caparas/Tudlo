@@ -33,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@SuppressWarnings("null")
 class RbacAndOwnershipIntegrationTest {
 
     @Autowired
@@ -131,12 +132,13 @@ class RbacAndOwnershipIntegrationTest {
                                 .andExpect(jsonPath("$.firstName").value("Janet"))
                                 .andExpect(jsonPath("$.lastName").value("Student"));
 
-        var updatedStudent = studentRepository.findById(student.getUserIdNumber()).orElseThrow();
+        String studentIdNumber = java.util.Objects.requireNonNull(student.getUserIdNumber());
+        var updatedStudent = studentRepository.findById(studentIdNumber).orElseThrow();
         assertEquals("Janet", updatedStudent.getFirstName());
         assertEquals("Student", updatedStudent.getLastName());
 
         String teacherToken = jwtUtil.generateToken(teacherIdNumber, "TEACHER", teacherId);
-        String studentToken = jwtUtil.generateToken(student.getUserIdNumber(), "STUDENT", student.getId());
+        String studentToken = jwtUtil.generateToken(studentIdNumber, "STUDENT", student.getId());
         mockMvc.perform(get("/api/users")
                         .header("Authorization", "Bearer " + teacherToken))
                 .andExpect(status().isForbidden());

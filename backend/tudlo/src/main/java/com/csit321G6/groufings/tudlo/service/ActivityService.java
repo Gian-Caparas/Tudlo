@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@SuppressWarnings("null")
 public class ActivityService extends CrudService<Activity, ActivityDto.Request, ActivityDto.Response> {
 
     private final ActivityRepository activityRepository;
@@ -100,7 +101,7 @@ public class ActivityService extends CrudService<Activity, ActivityDto.Request, 
         SubjectOffering offering = assessment.getOffering();
         accessPolicy.requireOfferingWriteAccess(offering);
 
-        String studentId = request.studentId().trim();
+        String studentId = java.util.Objects.requireNonNull(request.studentId(), "Student ID is required").trim();
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
 
@@ -129,10 +130,12 @@ public class ActivityService extends CrudService<Activity, ActivityDto.Request, 
     @Transactional
     public ActivityDto.Response create(ActivityDto.Request request) {
         ActivityDto.Response response = super.create(request);
-        Assessment assessment = assessmentRepository.findById(response.assessmentId())
-                .orElseThrow(() -> new ResourceNotFoundException("Assessment", response.assessmentId()));
-        Student student = studentRepository.findById(response.studentId())
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found: " + response.studentId()));
+        Long assessmentId = java.util.Objects.requireNonNull(response.assessmentId(), "Assessment ID is required");
+        String studentId = java.util.Objects.requireNonNull(response.studentId(), "Student ID is required");
+        Assessment assessment = assessmentRepository.findById(assessmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assessment", assessmentId));
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentId));
         syncDerivedMetrics(assessment.getOffering(), student);
         return response;
     }
@@ -141,10 +144,12 @@ public class ActivityService extends CrudService<Activity, ActivityDto.Request, 
     @Transactional
     public ActivityDto.Response update(Long id, ActivityDto.Request request) {
         ActivityDto.Response response = super.update(id, request);
-        Assessment assessment = assessmentRepository.findById(response.assessmentId())
-                .orElseThrow(() -> new ResourceNotFoundException("Assessment", response.assessmentId()));
-        Student student = studentRepository.findById(response.studentId())
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found: " + response.studentId()));
+        Long assessmentId = java.util.Objects.requireNonNull(response.assessmentId(), "Assessment ID is required");
+        String studentId = java.util.Objects.requireNonNull(response.studentId(), "Student ID is required");
+        Assessment assessment = assessmentRepository.findById(assessmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assessment", assessmentId));
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentId));
         syncDerivedMetrics(assessment.getOffering(), student);
         return response;
     }
@@ -152,7 +157,7 @@ public class ActivityService extends CrudService<Activity, ActivityDto.Request, 
     @Override
     @Transactional
     public void delete(Long id) {
-        Activity existing = getEntity(id);
+        Activity existing = java.util.Objects.requireNonNull(getEntity(id));
         beforeDelete(existing);
         SubjectOffering offering = existing.getAssessment().getOffering();
         Student student = existing.getStudent();
@@ -186,7 +191,7 @@ public class ActivityService extends CrudService<Activity, ActivityDto.Request, 
 
         double overallScore = studentActivities.stream()
                 .filter(a -> a.getScore() != null)
-                .mapToDouble(Activity::getScore)
+                .mapToDouble(a -> a.getScore())
                 .sum();
 
         double maxPossibleScore = studentActivities.stream()

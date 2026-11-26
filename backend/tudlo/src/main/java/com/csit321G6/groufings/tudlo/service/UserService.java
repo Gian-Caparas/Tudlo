@@ -15,6 +15,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 @Service
+@SuppressWarnings("null")
 public class UserService extends CrudService<User, UserDto.Request, UserDto.Response> {
 
     public static final String DEFAULT_STUDENT_PASSWORD = "student123";
@@ -108,8 +109,9 @@ public class UserService extends CrudService<User, UserDto.Request, UserDto.Resp
     @Override
     protected void afterUpdate(User updated, UserDto.Request request) {
         if (updated.getUserType() == UserType.STUDENT) {
-            Student student = studentRepository.findById(updated.getUserIdNumber()).orElseGet(Student::new);
-            student.setStudentId(updated.getUserIdNumber());
+            String studentId = java.util.Objects.requireNonNull(updated.getUserIdNumber(), "Student ID is required");
+            Student student = studentRepository.findById(studentId).orElseGet(Student::new);
+            student.setStudentId(studentId);
             student.setFirstName(updated.getFirstName());
             student.setLastName(updated.getLastName());
             studentRepository.save(student);
@@ -118,8 +120,9 @@ public class UserService extends CrudService<User, UserDto.Request, UserDto.Resp
 
     @Override
     protected void beforeDelete(User existing) {
-        if (existing.getUserType() == UserType.STUDENT && studentRepository.existsById(existing.getUserIdNumber())) {
-            studentRepository.deleteById(existing.getUserIdNumber());
+        String studentId = existing.getUserIdNumber();
+        if (existing.getUserType() == UserType.STUDENT && studentId != null && studentRepository.existsById(studentId)) {
+            studentRepository.deleteById(studentId);
         }
     }
 
@@ -134,8 +137,9 @@ public class UserService extends CrudService<User, UserDto.Request, UserDto.Resp
                 }
             }
             case STUDENT -> {
-                Student student = studentRepository.findById(created.getUserIdNumber()).orElseGet(Student::new);
-                student.setStudentId(created.getUserIdNumber());
+                String studentId = java.util.Objects.requireNonNull(created.getUserIdNumber(), "Student ID is required");
+                Student student = studentRepository.findById(studentId).orElseGet(Student::new);
+                student.setStudentId(studentId);
                 student.setFirstName(created.getFirstName());
                 student.setLastName(created.getLastName());
                 studentRepository.save(student);
@@ -153,11 +157,11 @@ public class UserService extends CrudService<User, UserDto.Request, UserDto.Resp
 
     private String nextUserIdNumber() {
         long highestSequence = userRepository.findAll().stream()
-                .map(User::getUserIdNumber)
+                .map(u -> u.getUserIdNumber())
                 .filter(id -> id != null && id.startsWith("2026-"))
                 .map(id -> id.substring("2026-".length()))
                 .filter(suffix -> suffix.matches("[0-9]+"))
-                .mapToLong(Long::parseLong)
+                .mapToLong(s -> Long.parseLong(s))
                 .max()
                 .orElse(0);
 
