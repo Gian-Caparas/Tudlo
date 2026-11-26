@@ -232,15 +232,15 @@ export function StudentsView({ data }) {
             <div
               className="students-grid"
               style={{
-                gridTemplateColumns: `fit-content(240px) repeat(${items.length}, minmax(120px, 1fr))`,
+                gridTemplateColumns: `fit-content(240px) repeat(${items.length}, 120px)`,
               }}
             >
-              <div className="col-card">
-                <div className="col-head">Student Name</div>
-                {shown.map((s) => (
-                  <div className="col-cell name" key={s.id}>{s.firstName} {s.lastName}</div>
-                ))}
-              </div>
+            <div className="col-card">
+              <div className="col-head">Student Name</div>
+              {shown.map((s) => (
+                <div className="col-cell name" key={s.id}>{s.firstName} {s.lastName}</div>
+              ))}
+            </div>
 
               {items.map((item) => (
                 <div className="col-card" key={item.id}>

@@ -2711,17 +2711,27 @@ tbody tr:last-child td {
 
 /* ---- Students: score cell (number + "/ max" side by side) ---- */
 .col-cell.score {
-  gap: 6px;
+  position: relative;
+  padding: 0 8px;
 }
 .col-cell.score input.score-edit {
-  width: 64px;
-  flex: none;
-  text-align: right;
+  box-sizing: border-box;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 38px;
+  padding: 4px 2px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  appearance: textfield;
+}
+.col-cell.score input.score-edit::-webkit-inner-spin-button,
+.col-cell.score input.score-edit::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
 }
 .col-cell.score .score-max {
-  white-space: nowrap;
-  font-size: 11px;
-  color: #8a9894;
+  display:none;
 }
 
 /* ---- Phones/tablets: the closed sidebar must not peek out on the left ---- */
@@ -2742,15 +2752,6 @@ tbody tr:last-child td {
   padding-bottom: 10px;
 }
 
-.col-cell.score {
-  padding: 0 8px;
-  gap: 5px;
-}
-.col-cell.score input.score-edit {
-  width: 48px;
-  text-align: right;
-}
-
 .students-grid .col-head {
   padding: 0 8px;
   font-size: 10px;
@@ -2762,8 +2763,8 @@ tbody tr:last-child td {
 
 /* ---- Students: name column fits its content, left aligned ---- */
 .students-grid {
-  width: 100%;
-  min-width: 720px;
+  width: max-content;
+  min-width: 0;
 }
 .students-grid > .col-card:first-child .col-head {
   align-items: flex-start;
@@ -2773,6 +2774,7 @@ tbody tr:last-child td {
 .students-grid > .col-card:first-child .col-cell {
   white-space: nowrap;
 }
+.student-grid > .col-card 
 
 /* ---- Subject Mapping: compact table ---- */
 .mapping-cards {
@@ -2915,6 +2917,6 @@ tbody tr:last-child td {
     height: 56px;
   }
   .mapping-cards .col-cell input.max {
-    font-size: 13px;
+    font-size: 16px;
   }
 }
