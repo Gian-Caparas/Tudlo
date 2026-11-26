@@ -20,9 +20,12 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -61,7 +64,7 @@ class RbacAndOwnershipIntegrationTest {
     }
 
     @Test
-    void adminCanCreateUsersAndNonAdminGets403OnUsersEndpoint() throws Exception {
+    void adminCannotCreateStudentsButCanCreateTeachersAndUpdateUserNames() throws Exception {
         var adminUser = userRepository.findByUserIdNumber("2026-0001").orElseThrow();
         String adminToken = jwtUtil.generateToken(adminUser.getUserIdNumber(), "ADMIN", adminUser.getId());
 
@@ -76,17 +79,64 @@ class RbacAndOwnershipIntegrationTest {
                                   "userType": "STUDENT"
                                 }
                                 """))
+                .andExpect(status().isBadRequest());
+
+        assertFalse(userRepository.existsByUserIdNumber("2026-0002"));
+
+        MvcResult teacherResult = mockMvc.perform(post("/api/users")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "firstName": "Pedro",
+                                  "lastName": "Santos",
+                                  "password": "teacherPass1",
+                                  "userType": "TEACHER"
+                                }
+                                """))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.userIdNumber").value("2026-0002"))
-                .andExpect(jsonPath("$.userType").value("STUDENT"));
+                .andExpect(jsonPath("$.userType").value("TEACHER"))
+                .andReturn();
+        JsonNode teacherJson = objectMapper.readTree(teacherResult.getResponse().getContentAsString());
+        long teacherId = teacherJson.get("id").asLong();
+        String teacherIdNumber = teacherJson.get("userIdNumber").asText();
+        assertTrue(teacherRepository.findByUserId(teacherId).isPresent());
 
-        assertTrue(studentRepository.existsById("2026-0002"));
+        var student = userService.ensureStudent("2026-5001", "Jane", "Student");
+        mockMvc.perform(put("/api/users/{id}", teacherId)
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "firstName": "Peter",
+                                  "lastName": "Santos",
+                                  "userType": "TEACHER"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.firstName").value("Peter"))
+                                .andExpect(jsonPath("$.lastName").value("Santos"));
 
-        UserDto.Response teacher = userService.create(
-                new UserDto.Request("Pedro", "Santos", "teacherPass1", UserType.TEACHER, null));
-        String teacherToken = jwtUtil.generateToken(teacher.userIdNumber(), "TEACHER", teacher.id());
-        String studentToken = jwtUtil.generateToken("2026-0002", "STUDENT", 2L);
+        mockMvc.perform(put("/api/users/{id}", student.getId())
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "firstName": "Janet",
+                                  "lastName": "Student",
+                                  "userType": "STUDENT"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.firstName").value("Janet"))
+                                .andExpect(jsonPath("$.lastName").value("Student"));
 
+        var updatedStudent = studentRepository.findById(student.getUserIdNumber()).orElseThrow();
+        assertEquals("Janet", updatedStudent.getFirstName());
+        assertEquals("Student", updatedStudent.getLastName());
+
+        String teacherToken = jwtUtil.generateToken(teacherIdNumber, "TEACHER", teacherId);
+        String studentToken = jwtUtil.generateToken(student.getUserIdNumber(), "STUDENT", student.getId());
         mockMvc.perform(get("/api/users")
                         .header("Authorization", "Bearer " + teacherToken))
                 .andExpect(status().isForbidden());

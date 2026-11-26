@@ -4,9 +4,10 @@ import { Avatar } from '@/components/ui/Avatar.jsx'
 import { Badge } from '@/components/ui/Badge.jsx'
 import { Icon } from '@/components/ui/Icon.jsx'
 import { useAuth } from '@/hooks/useAuth.js'
-import { assignableRoles } from '@/utils/permissions.js'
+import { assignableRoles, canManage } from '@/utils/permissions.js'
 import { usersService } from '@/services/usersService.js'
 import { AddUsers } from './AddUsers.jsx'
+import { EditUser } from './EditUser.jsx'
 
 // Human-readable labels for each role
 const roleLabels = {
@@ -33,10 +34,11 @@ export function AllUsers() {
   const [search, setSearch] = useState('')             // search input
   const [roleFilter, setRoleFilter] = useState('ALL')  // role dropdown
   const [showAddUser, setShowAddUser] = useState(false) // show add modal
+  const [editingUser, setEditingUser] = useState(null)
   const [notice, setNotice] = useState('')              // success message
 
-  // Roles the current user is allowed to assign
-  const availableRoles = assignableRoles(actorRole)
+  // Student accounts are provisioned through class-list import, not user management.
+  const availableRoles = assignableRoles(actorRole).filter((role) => role !== 'STUDENT')
 
   // Fetch all users on mount (and whenever retryCount changes)
   useEffect(() => {
@@ -71,16 +73,22 @@ export function AllUsers() {
   const studentCount = users.filter((u) => u.userType === 'STUDENT').length
   const adminCount = users.filter((u) => u.userType === 'ADMIN').length
 
-  // Called when a new user is created in the AddUsers modal
+  // Called when a new teacher is created in the AddUsers modal.
   function handleCreated(user) {
     setUsers((current) => [...current, user])
     setShowAddUser(false)
     setNotice(`${getFullName(user)} was added with user ID ${user.userIdNumber}.`)
   }
 
+  function handleUpdated(user) {
+    setUsers((current) => current.map((existing) => (existing.id === user.id ? user : existing)))
+    setEditingUser(null)
+    setNotice(`${getFullName(user)}'s details were updated.`)
+  }
+
   return (
     <div className="users-page">
-      {/* Page title + "Add user" button (only if actor can assign roles) */}
+      {/* Page title + teacher creation action */}
       <PageHeader
         eyebrow="ADMINISTRATION"
         title="User Management"
@@ -88,7 +96,7 @@ export function AllUsers() {
         action={availableRoles.length > 0 && (
           <button className="btn primary" type="button" onClick={() => setShowAddUser(true)}>
             <Icon name="plus" size={15} />
-            Add user
+            Add teacher
           </button>
         )}
       />
@@ -151,14 +159,15 @@ export function AllUsers() {
                 <th scope="col">Full name</th>
                 <th scope="col">User ID number</th>
                 <th scope="col">Role</th>
+                <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td className="users-empty" colSpan="3">Loading users...</td></tr>
+                <tr><td className="users-empty" colSpan="4">Loading users...</td></tr>
               ) : filteredUsers.length === 0 && !loadError ? (
                 <tr>
-                  <td className="users-empty" colSpan="3">
+                  <td className="users-empty" colSpan="4">
                     {users.length === 0 ? 'No users found.' : 'No users match your search.'}
                   </td>
                 </tr>
@@ -178,6 +187,18 @@ export function AllUsers() {
                         {roleLabels[user.userType] ?? user.userType}
                       </Badge>
                     </td>
+                    <td>
+                      {canManage(actorRole, user.userType) && (
+                        <button
+                          className="btn ghost users-edit-button"
+                          type="button"
+                          onClick={() => setEditingUser(user)}
+                          aria-label={`Edit ${fullName}`}
+                        >
+                          Edit
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 )
               })}
@@ -192,6 +213,13 @@ export function AllUsers() {
           roles={availableRoles}
           onClose={() => setShowAddUser(false)}
           onCreated={handleCreated}
+        />
+      )}
+      {editingUser && (
+        <EditUser
+          user={editingUser}
+          onClose={() => setEditingUser(null)}
+          onUpdated={handleUpdated}
         />
       )}
     </div>

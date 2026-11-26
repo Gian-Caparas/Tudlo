@@ -15,7 +15,7 @@ export function AddUsers({ roles, onClose, onCreated }) {
     firstName: '',
     lastName: '',
     password: '',
-    userType: roles[0] ?? 'STUDENT',
+    userType: roles[0] ?? 'TEACHER',
   })
 
   // Submit state
@@ -49,7 +49,7 @@ export function AddUsers({ roles, onClose, onCreated }) {
 
   return (
     <Modal
-      title="Add user"
+      title="Add teacher"
       // Block closing while saving
       onClose={saving ? () => {} : onClose}
       footer={
@@ -59,7 +59,7 @@ export function AddUsers({ roles, onClose, onCreated }) {
           </button>
           {/* Submits the form below via its id */}
           <button className="btn primary" type="submit" form="add-user-form" disabled={saving}>
-            {saving ? 'Adding...' : 'Add user'}
+            {saving ? 'Adding...' : 'Add teacher'}
           </button>
         </>
       }
@@ -114,14 +114,17 @@ export function AddUsers({ roles, onClose, onCreated }) {
           <small className="users-field-hint">Use at least 8 characters.</small>
         </label>
 
-        {/* Role dropdown — only roles the actor can assign */}
         <label>
           Role
-          <select name="userType" value={form.userType} onChange={updateField} required>
-            {roles.map((role) => (
-              <option key={role} value={role}>{roleLabels[role] ?? role}</option>
-            ))}
-          </select>
+          {roles.length === 1 ? (
+            <input value={roleLabels[roles[0]] ?? roles[0]} readOnly />
+          ) : (
+            <select name="userType" value={form.userType} onChange={updateField} required>
+              {roles.map((role) => (
+                <option key={role} value={role}>{roleLabels[role] ?? role}</option>
+              ))}
+            </select>
+          )}
         </label>
       </form>
     </Modal>
