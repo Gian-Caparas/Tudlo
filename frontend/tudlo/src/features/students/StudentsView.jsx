@@ -232,7 +232,7 @@ export function StudentsView({ data }) {
             <div
               className="students-grid"
               style={{
-                gridTemplateColumns: `fit-content(240px) repeat(${items.length}, 120px)`,
+                gridTemplateColumns: `fit-content(240px) repeat(${items.length}, minmax(120px, 1fr))`,
               }}
             >
               <div className="col-card">

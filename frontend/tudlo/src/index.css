@@ -2762,8 +2762,8 @@ tbody tr:last-child td {
 
 /* ---- Students: name column fits its content, left aligned ---- */
 .students-grid {
-  width: max-content;
-  min-width: 0;
+  width: 100%;
+  min-width: 720px;
 }
 .students-grid > .col-card:first-child .col-head {
   align-items: flex-start;
